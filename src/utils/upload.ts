@@ -10,28 +10,24 @@ interface UploadResult {
 
 /**
  * 将图片上传到服务器
- * @param file 图片文件
- * @param thumbnailWidth 可选的缩略图宽度
- * @param thumbnailHeight 可选的缩略图高度
- * @param thumbnailQuality 可选的缩略图质量
+ * @param options 上传选项
  * @returns 上传结果
  */
-export const uploadImage = async (
-  file: File,
-  thumbnailWidth?: number,
-  thumbnailHeight?: number,
-  thumbnailQuality?: number,
-): Promise<UploadResult> => {
+export const uploadImage = async ({
+  file,
+  generateThumbnail = true,
+}: {
+  file: File;
+  generateThumbnail?: boolean;
+}): Promise<UploadResult> => {
   try {
     // 创建FormData
     const formData = new FormData()
     formData.append('image', file)
     formData.append('fileName', file.name) // 原始文件名用于显示
 
-    // 添加缩略图参数（如果有）
-    if (thumbnailWidth) formData.append('thumbnailWidth', thumbnailWidth.toString())
-    if (thumbnailHeight) formData.append('thumbnailHeight', thumbnailHeight.toString())
-    if (thumbnailQuality) formData.append('thumbnailQuality', Math.round(thumbnailQuality * 100).toString())
+    // 添加是否生成缩略图的标记
+    formData.append('generateThumbnail', generateThumbnail.toString())
 
     // 发送请求
     const response = await fetch('/api/upload', {

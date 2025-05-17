@@ -26,6 +26,8 @@ interface UploadedImage {
 // 已上传图片列表
 const uploadedImages = ref<UploadedImage[]>([])
 const loading = ref(false)
+// 是否只进行质量压缩，不生成缩略图（不改变图片尺寸）
+const compressOnlyQuality = ref(true)
 
 // 获取已上传图片列表
 const fetchUploadedImages = async () => {
@@ -57,12 +59,10 @@ const handleUploadSuccess = async (file: File) => {
     loading.value = true
 
     // 上传到服务器，传递缩略图相关参数
-    await uploadImage(
+    await uploadImage({
       file,
-      DEFAULT_THUMBNAIL_WIDTH,
-      DEFAULT_THUMBNAIL_HEIGHT,
-      DEFAULT_THUMBNAIL_QUALITY
-    )
+      generateThumbnail: !compressOnlyQuality.value // 根据选项决定是否生成缩略图
+    })
 
     // 获取最新的图片列表
     await fetchUploadedImages()
@@ -85,12 +85,10 @@ const handleUploadSuccessMultiple = async (files: File[]) => {
 
     // 批量上传到服务器
     const uploadPromises = files.map(file =>
-      uploadImage(
+      uploadImage({
         file,
-        DEFAULT_THUMBNAIL_WIDTH,
-        DEFAULT_THUMBNAIL_HEIGHT,
-        DEFAULT_THUMBNAIL_QUALITY
-      )
+        generateThumbnail: !compressOnlyQuality.value // 根据选项决定是否生成缩略图
+      })
     )
 
     await Promise.all(uploadPromises)
