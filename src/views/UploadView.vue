@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { MessagePlugin, DialogPlugin } from 'tdesign-vue-next'
 import ImageUpload from '@/components/ImageUpload.vue'
-import { uploadImages, getUploadedImages, deleteImage, formatFileSize } from '@/utils/upload'
+import { uploadImage, getUploadedImages, deleteImage, formatFileSize } from '@/utils/upload'
 import { MAX_FILE_SIZE, DEFAULT_THUMBNAIL_WIDTH, DEFAULT_THUMBNAIL_HEIGHT, DEFAULT_THUMBNAIL_QUALITY } from '@/constants/sharedConstants'
 
 interface ServerImage {
@@ -52,14 +52,17 @@ onMounted(() => {
 /**
  * 处理上传成功事件
  */
-const handleUploadSuccess = async (data: { original: string; thumbnail: string; file: File }) => {
-  const { original, thumbnail, file } = data
-
+const handleUploadSuccess = async (file: File) => {
   try {
     loading.value = true
 
-    // 上传到服务器
-    await uploadImages(original, thumbnail, file.name)
+    // 上传到服务器，传递缩略图相关参数
+    await uploadImage(
+      file,
+      DEFAULT_THUMBNAIL_WIDTH,
+      DEFAULT_THUMBNAIL_HEIGHT,
+      DEFAULT_THUMBNAIL_QUALITY
+    )
 
     // 获取最新的图片列表
     await fetchUploadedImages()
@@ -76,13 +79,18 @@ const handleUploadSuccess = async (data: { original: string; thumbnail: string; 
 /**
  * 处理批量上传成功事件
  */
-const handleUploadSuccessMultiple = async (dataArray: Array<{ original: string; thumbnail: string; file: File }>) => {
+const handleUploadSuccessMultiple = async (files: File[]) => {
   try {
     loading.value = true
 
     // 批量上传到服务器
-    const uploadPromises = dataArray.map(({ original, thumbnail, file }) =>
-      uploadImages(original, thumbnail, file.name)
+    const uploadPromises = files.map(file =>
+      uploadImage(
+        file,
+        DEFAULT_THUMBNAIL_WIDTH,
+        DEFAULT_THUMBNAIL_HEIGHT,
+        DEFAULT_THUMBNAIL_QUALITY
+      )
     )
 
     await Promise.all(uploadPromises)
@@ -90,7 +98,7 @@ const handleUploadSuccessMultiple = async (dataArray: Array<{ original: string; 
     // 获取最新的图片列表
     await fetchUploadedImages()
 
-    MessagePlugin.success(`成功上传 ${dataArray.length} 张图片`)
+    MessagePlugin.success(`成功上传 ${files.length} 张图片`)
   } catch (error) {
     console.error('批量上传失败:', error)
     MessagePlugin.error(`批量上传失败: ${error instanceof Error ? error.message : '未知错误'}`)
@@ -180,116 +188,207 @@ const handleDeleteImage = (id: string) => {
         </div>
       </div>
     </div>
+
+    <div v-else class="empty-state">
+      <div class="empty-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24">
+          <path fill="currentColor"
+            d="M5 21q-.825 0-1.413-.588T3 19V5q0-.825.588-1.413T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.588 1.413T19 21H5Zm0-2h14V5H5v14Zm0 0V5v14Zm7-7q1.25 0 2.125-.875T15 9q0-1.25-.875-2.125T12 6q-1.25 0-2.125.875T9 9q0 1.25.875 2.125T12 12Zm-6 6h12v-2q0-.825-.425-1.213T16 14.275q-1 .85-2.288 1.288T11.975 16q-1.45 0-2.75-.438T7 14.275q-.55.125-1 .5T5.025 16L5 18h1Z" />
+        </svg>
+      </div>
+      <div class="empty-text">暂无上传图片</div>
+      <div class="empty-action">
+        通过上方上传区域添加图片
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.page-description {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-bottom: var(--spacing-lg);
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
 }
 
-.upload-section {
-  margin-bottom: var(--spacing-xl);
+.page-title {
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: var(--td-text-color-primary);
+}
+
+.page-description {
+  font-size: 16px;
+  color: var(--td-text-color-secondary);
+  margin-bottom: 24px;
+}
+
+.card {
+  background-color: var(--td-bg-color-container);
+  border-radius: 8px;
+  box-shadow: var(--td-shadow-1);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 20px;
+  margin-bottom: 16px;
+  color: var(--td-text-color-primary);
 }
 
 .loading-section {
+  min-height: 200px;
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin: var(--spacing-xl) 0;
 }
 
 .loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 16px;
 }
 
 .loading-text {
-  margin-top: var(--spacing-sm);
+  color: var(--td-text-color-secondary);
   font-size: 14px;
-  color: var(--text-secondary);
 }
 
 .list-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
 }
 
 .image-item {
   display: flex;
-  align-items: center;
-  padding: var(--spacing-md);
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.image-item:hover {
+  transform: translateY(-2px);
 }
 
 .thumbnail-container {
-  width: 60px;
-  height: 60px;
+  height: 200px;
   overflow: hidden;
-  border-radius: 4px;
-  margin-right: var(--spacing-md);
-  flex-shrink: 0;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
 }
 
 .thumbnail {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.image-item:hover .thumbnail {
+  transform: scale(1.05);
 }
 
 .image-info {
+  padding: 16px;
   flex-grow: 1;
 }
 
 .file-name {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--td-text-color-primary);
+  margin-bottom: 8px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 300px;
 }
 
 .file-meta {
   display: flex;
-  gap: var(--spacing-md);
-  font-size: 12px;
-  color: var(--text-tertiary);
-  margin-top: var(--spacing-xs);
+  justify-content: space-between;
+  color: var(--td-text-color-secondary);
+  font-size: 14px;
 }
 
 .image-actions {
+  padding: 16px;
   display: flex;
-  gap: var(--spacing-sm);
+  gap: 8px;
+  border-top: 1px solid var(--td-component-stroke);
 }
 
 .btn {
-  padding: 4px 8px;
+  padding: 8px 16px;
+  border: none;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
-  text-decoration: none;
+  flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
 }
 
 .btn-primary {
-  background-color: var(--primary-color);
+  background-color: var(--td-brand-color);
   color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--td-brand-color-hover);
 }
 
 .btn-secondary {
-  background-color: var(--info-color, #0052d9);
-  color: white;
+  background-color: var(--td-brand-color-light);
+  color: var(--td-brand-color);
+}
+
+.btn-secondary:hover {
+  background-color: var(--td-brand-color-focus);
 }
 
 .btn-danger {
-  background-color: var(--danger-color, #e34d59);
-  color: white;
-  border: none;
+  background-color: var(--td-error-color-1);
+  color: var(--td-error-color);
+}
+
+.btn-danger:hover {
+  background-color: var(--td-error-color-2);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px 0;
+  color: var(--td-text-color-secondary);
+}
+
+.empty-icon {
+  margin-bottom: 16px;
+}
+
+.empty-text {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.empty-action {
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .list-container {
+    grid-template-columns: 1fr;
+  }
+
+  .page-container {
+    padding: 16px;
+  }
 }
 </style>

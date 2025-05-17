@@ -1,23 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { generateThumbnail } from '@/utils/image'
 import { Loading, MessagePlugin, Progress } from 'tdesign-vue-next'
-import { MAX_FILE_SIZE, DEFAULT_THUMBNAIL_WIDTH, DEFAULT_THUMBNAIL_HEIGHT, DEFAULT_THUMBNAIL_QUALITY } from '@/constants/sharedConstants'
+import { MAX_FILE_SIZE } from '@/constants/sharedConstants'
 
 const props = defineProps<{
   maxFileSize?: number // 最大文件大小，单位MB
-  thumbnailWidth?: number // 缩略图宽度
-  thumbnailHeight?: number // 缩略图高度
-  thumbnailQuality?: number // 缩略图质量
+  thumbnailWidth?: number // 缩略图宽度（将由后端使用）
+  thumbnailHeight?: number // 缩略图高度（将由后端使用）
+  thumbnailQuality?: number // 缩略图质量（将由后端使用）
   multiple?: boolean // 是否支持多文件上传
 }>()
 
 const emit = defineEmits<{
-  (e: 'upload-success', data: { original: string; thumbnail: string; file: File }): void
-  (
-    e: 'upload-success-multiple',
-    data: Array<{ original: string; thumbnail: string; file: File }>,
-  ): void
+  (e: 'upload-success', file: File): void
+  (e: 'upload-success-multiple', files: File[]): void
   (e: 'upload-error', error: Error): void
 }>()
 
@@ -31,9 +27,6 @@ const uploadCompleted = ref(0)
 
 // 设置默认值
 const maxFileSize = props.maxFileSize || MAX_FILE_SIZE
-const thumbnailWidth = props.thumbnailWidth || DEFAULT_THUMBNAIL_WIDTH
-const thumbnailHeight = props.thumbnailHeight || DEFAULT_THUMBNAIL_HEIGHT
-const thumbnailQuality = props.thumbnailQuality || DEFAULT_THUMBNAIL_QUALITY
 
 /**
  * 打开文件选择器
@@ -49,7 +42,7 @@ const processFile = async (
   file: File,
 ): Promise<{
   success: boolean
-  result?: { original: string; thumbnail: string; file: File }
+  result?: File
   error?: string
 }> => {
   // 检查文件大小
@@ -68,25 +61,10 @@ const processFile = async (
     }
   }
 
-  try {
-    // 生成缩略图
-    const { original, thumbnail } = await generateThumbnail(
-      file,
-      thumbnailWidth,
-      thumbnailHeight,
-      thumbnailQuality,
-    )
-
-    return {
-      success: true,
-      result: { original, thumbnail, file },
-    }
-  } catch (error) {
-    console.error(`生成缩略图失败: ${file.name}`, error)
-    return {
-      success: false,
-      error: `处理文件 ${file.name} 失败`,
-    }
+  // 直接返回原始文件，不再生成缩略图
+  return {
+    success: true,
+    result: file,
   }
 }
 
@@ -135,7 +113,7 @@ const processMultipleFiles = async (fileList: FileList) => {
     isUploading.value = true
     uploadProgress.value = 0
 
-    const results: Array<{ original: string; thumbnail: string; file: File }> = []
+    const results: Array<File> = []
     const errors: Array<string> = []
     const totalFiles = fileList.length
     uploadTotal.value = totalFiles
@@ -188,7 +166,7 @@ const processMultipleFiles = async (fileList: FileList) => {
     console.error('批量处理文件失败:', error)
     emit('upload-error', error instanceof Error ? error : new Error('批量处理文件失败'))
     MessagePlugin.error('批量处理文件失败')
-  } finally {
+
     loading.value = false
     isUploading.value = false
     resetFileInput()
@@ -287,7 +265,7 @@ const handleDrop = async (e: DragEvent) => {
         <span class="upload-text">
           {{ multiple ? '点击或拖拽上传多张图片' : '点击或拖拽上传图片' }}
         </span>
-        <span class="upload-hint">自动生成缩略图，文件大小不超过{{ maxFileSize }}MB</span>
+        <span class="upload-hint">缩略图将在服务器自动生成，文件大小不超过{{ maxFileSize }}MB</span>
 
         <div v-if="isDragging" class="drag-overlay">
           <div class="drag-icon">
@@ -306,6 +284,7 @@ const handleDrop = async (e: DragEvent) => {
 <style scoped>
 .image-upload-container {
   width: 100%;
+  position: relative;
 }
 
 .file-input {
@@ -314,72 +293,76 @@ const handleDrop = async (e: DragEvent) => {
 
 .upload-area {
   width: 100%;
-  height: 200px;
-  border: 2px dashed var(--border-color);
-  border-radius: var(--border-radius);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  overflow: hidden;
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.upload-area:hover,
-.upload-area.is-dragging {
-  border-color: var(--primary-color);
-  background-color: rgba(var(--primary-color-rgb), 0.05);
-}
-
-.upload-placeholder {
+  border: 2px dashed var(--td-component-stroke);
+  border-radius: 8px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: var(--text-secondary);
-  position: relative;
-  width: 100%;
-  height: 100%;
   justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  min-height: 160px;
 }
 
-.upload-icon {
-  margin-bottom: var(--spacing-sm);
-  color: var(--primary-color);
+.upload-area:hover {
+  border-color: var(--td-brand-color);
 }
 
-.upload-text {
-  font-size: 16px;
-  margin-bottom: var(--spacing-xs);
-}
-
-.upload-hint {
-  font-size: 12px;
-  color: var(--text-tertiary);
+.upload-area.is-dragging {
+  border-color: var(--td-brand-color);
+  background-color: rgba(var(--td-brand-color-rgb), 0.05);
 }
 
 .loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 8px;
 }
 
 .loading-text {
-  margin-top: var(--spacing-sm);
+  color: var(--td-text-color-secondary);
   font-size: 14px;
-  color: var(--text-secondary);
 }
 
 .progress-container {
   width: 200px;
-  margin-top: var(--spacing-md);
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 .progress-text {
+  color: var(--td-text-color-secondary);
   font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: var(--spacing-xs);
-  text-align: center;
+  margin-top: 4px;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.upload-icon {
+  color: var(--td-brand-color);
+  margin-bottom: 8px;
+}
+
+.upload-text {
+  font-size: 16px;
+  color: var(--td-text-color-primary);
+}
+
+.upload-hint {
+  font-size: 14px;
+  color: var(--td-text-color-secondary);
+  margin-top: 4px;
 }
 
 .drag-overlay {
@@ -388,22 +371,23 @@ const handleDrop = async (e: DragEvent) => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(var(--primary-color-rgb), 0.1);
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  z-index: 1;
+  justify-content: center;
+  background-color: rgba(var(--td-brand-color-rgb), 0.1);
+  border-radius: 8px;
+  z-index: 10;
+  gap: 16px;
 }
 
 .drag-icon {
-  color: var(--primary-color);
-  margin-bottom: var(--spacing-md);
+  color: var(--td-brand-color);
 }
 
 .drag-text {
   font-size: 18px;
   font-weight: 500;
-  color: var(--primary-color);
+  color: var(--td-brand-color);
 }
 </style>

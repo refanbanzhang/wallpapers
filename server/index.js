@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import crypto from 'crypto';
+import sharp from 'sharp';
 
 // ES模块中获取__dirname的替代方法
 const __filename = fileURLToPath(import.meta.url);
@@ -12,6 +13,9 @@ const __dirname = path.dirname(__filename);
 
 // 常量设置 - 与前端保持一致
 const MAX_FILE_SIZE = 20; // 单位MB
+const DEFAULT_THUMBNAIL_WIDTH = 200;
+const DEFAULT_THUMBNAIL_HEIGHT = 200;
+const DEFAULT_THUMBNAIL_QUALITY = 70; // Sharp使用1-100的质量范围，而不是0-1
 
 const app = express();
 const port = 3000;
@@ -119,12 +123,69 @@ const generateSafeFilename = (originalName) => {
   }
 };
 
+/**
+ * 压缩图片
+ * @param {string} originalFilePath 原图路径
+ * @param {string} outputFilePath 输出图片保存路径
+ * @param {number} quality 图片质量(1-100)
+ * @returns {Promise<boolean>} 是否成功
+ */
+const compressImage = async (
+  originalFilePath,
+  outputFilePath,
+  quality = DEFAULT_THUMBNAIL_QUALITY
+) => {
+  try {
+    // 使用Sharp处理图片，只调整质量，不改变尺寸
+    await sharp(originalFilePath)
+      .jpeg({ quality }) // 设置JPEG质量
+      .toFile(outputFilePath);
+
+    console.log(`成功压缩图片: ${outputFilePath}`);
+    return true;
+  } catch (error) {
+    console.error('压缩图片失败:', error);
+    return false;
+  }
+};
+
+/**
+ * 生成缩略图
+ * @param {string} originalFilePath 原图路径
+ * @param {string} thumbnailFilePath 缩略图保存路径
+ * @param {number} quality 图片质量(1-100)
+ * @returns {Promise<boolean>} 是否成功
+ */
+const generateThumbnail = async (
+  originalFilePath,
+  thumbnailFilePath,
+  quality = DEFAULT_THUMBNAIL_QUALITY
+) => {
+  try {
+    // 使用Sharp处理图片
+    await sharp(originalFilePath)
+      .resize({
+        width: DEFAULT_THUMBNAIL_WIDTH,
+        height: DEFAULT_THUMBNAIL_HEIGHT,
+        fit: 'inside', // 保持原始图片比例
+        withoutEnlargement: true // 如果图片尺寸小于指定的尺寸，则不放大
+      })
+      .jpeg({ quality }) // 设置JPEG质量
+      .toFile(thumbnailFilePath);
+
+    console.log(`成功生成缩略图: ${thumbnailFilePath}`);
+    return true;
+  } catch (error) {
+    console.error('生成缩略图失败:', error);
+    return false;
+  }
+};
+
 // 设置multer存储
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // 根据字段名确定保存目录
-    const destDir = file.fieldname === 'original' ? originalDir : thumbnailsDir;
-    cb(null, destDir);
+    // 只存储到原图目录，缩略图将在处理后生成
+    cb(null, originalDir);
   },
   filename: (req, file, cb) => {
     // 获取自定义文件名基础（如果存在）
@@ -170,27 +231,51 @@ const generateFilenameBase = (req, res, next) => {
 };
 
 // 处理图片上传
-app.post('/api/upload', generateFilenameBase, upload.fields([
-  { name: 'original', maxCount: 1 },
-  { name: 'thumbnail', maxCount: 1 }
-]), (req, res) => {
+app.post('/api/upload', generateFilenameBase, upload.single('image'), async (req, res) => {
   try {
-    if (!req.files || !req.files.original || !req.files.thumbnail) {
+    if (!req.file) {
       return res.status(400).json({ error: '未接收到文件' });
     }
 
-    const originalFile = req.files.original[0];
-    const thumbnailFile = req.files.thumbnail[0];
+    const originalFile = req.file;
+    const originalFilePath = path.join(originalDir, originalFile.filename);
+
+    // 创建文件名（与原图同名但保存在thumbnails目录）
+    const processedFilename = originalFile.filename;
+    const processedFilePath = path.join(thumbnailsDir, processedFilename);
 
     // 从req.body中获取原始文件名
     const displayFileName = req.body.fileName || '未命名图片';
+
+    // 使用服务器默认值
+    const thumbnailQuality = DEFAULT_THUMBNAIL_QUALITY;
+
+    // 检查是否需要生成缩略图或仅压缩
+    const shouldGenerateThumbnail = req.body.generateThumbnail === 'true';
+
+    if (shouldGenerateThumbnail) {
+      // 使用服务器默认尺寸
+      // 生成缩略图
+      await generateThumbnail(
+        originalFilePath,
+        processedFilePath,
+        thumbnailQuality
+      );
+    } else {
+      // 只压缩图片，不改变尺寸
+      await compressImage(
+        originalFilePath,
+        processedFilePath,
+        thumbnailQuality
+      );
+    }
 
     // 返回文件访问路径
     res.json({
       success: true,
       data: {
         originalUrl: `/uploads/origin/${originalFile.filename}`,
-        thumbnailUrl: `/uploads/thumbnails/${thumbnailFile.filename}`,
+        thumbnailUrl: `/uploads/thumbnails/${processedFilename}`,
         fileName: displayFileName,
         fileSize: originalFile.size
       }
