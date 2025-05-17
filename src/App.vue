@@ -7,9 +7,21 @@ import { RouterView, RouterLink } from 'vue-router'
     <div class="nav-header">
       <h1>壁纸应用</h1>
       <div class="nav-links">
-        <RouterLink to="/" class="nav-link">首页</RouterLink>
-        <RouterLink to="/upload" class="nav-link">上传</RouterLink>
-        <RouterLink to="/about" class="nav-link">关于</RouterLink>
+        <RouterLink
+          to="/"
+          class="nav-link"
+          >首页</RouterLink
+        >
+        <RouterLink
+          to="/upload"
+          class="nav-link"
+          >上传</RouterLink
+        >
+        <RouterLink
+          to="/about"
+          class="nav-link"
+          >关于</RouterLink
+        >
       </div>
     </div>
     <div class="main-content">

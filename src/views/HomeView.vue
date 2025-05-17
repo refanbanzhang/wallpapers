@@ -110,7 +110,8 @@ const handleDownload = async () => {
     loading.value = true
 
     const imageUrl = currentWallpaper.value.urls.regular || currentWallpaper.value.urls.small
-    const imageName = currentWallpaper.value.alt_description || `wallpaper-${currentWallpaper.value.id}`
+    const imageName =
+      currentWallpaper.value.alt_description || `wallpaper-${currentWallpaper.value.id}`
 
     await downloadWallpaper(imageUrl, imageName)
   } catch (error) {
@@ -126,25 +127,56 @@ const handleDownload = async () => {
     <h1 class="page-title">壁纸库</h1>
 
     <div class="wallpapers-grid">
-      <div class="wallpaper-card" v-for="wallpaper in wallpapers" :key="wallpaper.id" @click="onOpenModal(wallpaper)">
-        <img :src="wallpaper.urls.small" :alt="wallpaper.alt_description" />
+      <div
+        class="wallpaper-card"
+        v-for="wallpaper in wallpapers"
+        :key="wallpaper.id"
+        @click="onOpenModal(wallpaper)"
+      >
+        <img
+          :src="wallpaper.urls.small"
+          :alt="wallpaper.alt_description"
+        />
         <div class="wallpaper-info">
-          <span class="wallpaper-resolution" v-if="wallpaper.resolution">
+          <span
+            class="wallpaper-resolution"
+            v-if="wallpaper.resolution"
+          >
             {{ wallpaper.resolution.width }} × {{ wallpaper.resolution.height }}
           </span>
         </div>
       </div>
     </div>
 
-    <t-dialog :visible="dialogVisible" :header="currentWallpaper?.alt_description" attach="body" @close="onCloseDialog">
-      <div v-if="currentWallpaper" class="dialog-content">
-        <img :src="currentWallpaper.urls.regular || currentWallpaper.urls.small" :alt="currentWallpaper.alt_description"
-          class="dialog-image" />
+    <t-dialog
+      :visible="dialogVisible"
+      :header="currentWallpaper?.alt_description"
+      attach="body"
+      @close="onCloseDialog"
+    >
+      <div
+        v-if="currentWallpaper"
+        class="dialog-content"
+      >
+        <img
+          :src="currentWallpaper.urls.regular || currentWallpaper.urls.small"
+          :alt="currentWallpaper.alt_description"
+          class="dialog-image"
+        />
       </div>
       <template #footer>
         <div class="dialog-footer">
-          <t-button theme="default" @click="onCloseDialog">关闭</t-button>
-          <t-button theme="primary" :loading="loading" @click="handleDownload">下载</t-button>
+          <t-button
+            theme="default"
+            @click="onCloseDialog"
+            >关闭</t-button
+          >
+          <t-button
+            theme="primary"
+            :loading="loading"
+            @click="handleDownload"
+            >下载</t-button
+          >
         </div>
       </template>
     </t-dialog>
@@ -164,7 +196,9 @@ const handleDownload = async () => {
   overflow: hidden;
   box-shadow: var(--box-shadow);
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   aspect-ratio: 16/9;
   position: relative;
 }

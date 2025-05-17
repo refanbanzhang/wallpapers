@@ -22,8 +22,8 @@ const router = createRouter({
       name: 'upload',
       component: () => import('@/views/UploadView.vue'),
       meta: {
-        title: '图片上传'
-      }
+        title: '图片上传',
+      },
     },
   ],
 })

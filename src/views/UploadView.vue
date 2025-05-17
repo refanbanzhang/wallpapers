@@ -30,10 +30,10 @@ const loading = ref(false)
 const fetchUploadedImages = async () => {
   try {
     loading.value = true
-    const images = await getUploadedImages() as ServerImage[]
+    const images = (await getUploadedImages()) as ServerImage[]
     uploadedImages.value = images.map((image) => ({
       ...image,
-      fileSize: formatFileSize(image.fileSize)
+      fileSize: formatFileSize(image.fileSize),
     }))
   } catch (error) {
     console.error('获取图片列表失败:', error)
@@ -51,7 +51,7 @@ onMounted(() => {
 /**
  * 处理上传成功事件
  */
-const handleUploadSuccess = async (data: { original: string, thumbnail: string, file: File }) => {
+const handleUploadSuccess = async (data: { original: string; thumbnail: string; file: File }) => {
   const { original, thumbnail, file } = data
 
   try {
@@ -67,6 +67,32 @@ const handleUploadSuccess = async (data: { original: string, thumbnail: string, 
   } catch (error) {
     console.error('上传失败:', error)
     MessagePlugin.error(`上传失败: ${error instanceof Error ? error.message : '未知错误'}`)
+  } finally {
+    loading.value = false
+  }
+}
+
+/**
+ * 处理批量上传成功事件
+ */
+const handleUploadSuccessMultiple = async (dataArray: Array<{ original: string; thumbnail: string; file: File }>) => {
+  try {
+    loading.value = true
+
+    // 批量上传到服务器
+    const uploadPromises = dataArray.map(({ original, thumbnail, file }) =>
+      uploadImages(original, thumbnail, file.name)
+    )
+
+    await Promise.all(uploadPromises)
+
+    // 获取最新的图片列表
+    await fetchUploadedImages()
+
+    MessagePlugin.success(`成功上传 ${dataArray.length} 张图片`)
+  } catch (error) {
+    console.error('批量上传失败:', error)
+    MessagePlugin.error(`批量上传失败: ${error instanceof Error ? error.message : '未知错误'}`)
   } finally {
     loading.value = false
   }
@@ -111,8 +137,9 @@ const handleDeleteImage = (id: string) => {
     <p class="page-description">上传图片会自动生成缩略图，支持多种图片格式</p>
 
     <div class="card upload-section">
-      <ImageUpload :max-file-size="10" :thumbnail-width="200" :thumbnail-height="200" :thumbnail-quality="0.7"
-        @upload-success="handleUploadSuccess" @upload-error="handleUploadError" />
+      <ImageUpload multiple :max-file-size="10" :thumbnail-width="200" :thumbnail-height="200" :thumbnail-quality="0.7"
+        @upload-success="handleUploadSuccess" @upload-success-multiple="handleUploadSuccessMultiple"
+        @upload-error="handleUploadError" />
     </div>
 
     <div v-if="loading" class="loading-section">
@@ -150,16 +177,6 @@ const handleDeleteImage = (id: string) => {
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="empty-state card" v-else>
-      <div class="empty-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
-          <path fill="currentColor"
-            d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14L6 17h12l-3.86-5.14z" />
-        </svg>
-      </div>
-      <p class="empty-text">暂无上传图片</p>
     </div>
   </div>
 </template>
@@ -272,21 +289,5 @@ const handleDeleteImage = (id: string) => {
   background-color: var(--danger-color, #e34d59);
   color: white;
   border: none;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: var(--spacing-xl) 0;
-  color: var(--text-tertiary);
-}
-
-.empty-icon {
-  margin-bottom: var(--spacing-md);
-}
-
-.empty-text {
-  font-size: 14px;
 }
 </style>
