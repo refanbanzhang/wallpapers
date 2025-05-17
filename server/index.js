@@ -25,12 +25,12 @@ app.use(cors());
 app.use(express.json());
 
 // 创建上传目录
-const uploadsDir = path.join(__dirname, '../uploads');
-const originalDir = path.join(uploadsDir, 'origin');
-const thumbnailsDir = path.join(uploadsDir, 'thumbnails');
+const UPLOADS_DIR = path.join(__dirname, '../uploads');
+const ORIGINAL_DIR = path.join(UPLOADS_DIR, 'origin');
+const THUMBNAILS_DIR = path.join(UPLOADS_DIR, 'thumbnails');
 
 // 确保上传目录存在
-[uploadsDir, originalDir, thumbnailsDir].forEach(dir => {
+[UPLOADS_DIR, ORIGINAL_DIR, THUMBNAILS_DIR].forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
     console.log(`创建目录: ${dir}`);
@@ -80,7 +80,7 @@ const safeUnlink = (filePath) => {
 };
 
 // 静态文件服务
-app.use('/uploads', express.static(uploadsDir));
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 // 安全的文件名生成函数
 const generateSafeFilename = (originalName) => {
@@ -185,7 +185,7 @@ const generateThumbnail = async (
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // 只存储到原图目录，缩略图将在处理后生成
-    cb(null, originalDir);
+    cb(null, ORIGINAL_DIR);
   },
   filename: (req, file, cb) => {
     // 获取自定义文件名基础（如果存在）
@@ -238,11 +238,11 @@ app.post('/api/upload', generateFilenameBase, upload.single('image'), async (req
     }
 
     const originalFile = req.file;
-    const originalFilePath = path.join(originalDir, originalFile.filename);
+    const originalFilePath = path.join(ORIGINAL_DIR, originalFile.filename);
 
     // 创建文件名（与原图同名但保存在thumbnails目录）
     const processedFilename = originalFile.filename;
-    const processedFilePath = path.join(thumbnailsDir, processedFilename);
+    const processedFilePath = path.join(THUMBNAILS_DIR, processedFilename);
 
     // 从req.body中获取原始文件名
     const displayFileName = req.body.fileName || '未命名图片';
@@ -292,7 +292,7 @@ app.get('/api/images', (req, res) => {
     const images = [];
 
     // 读取原图目录
-    const originalFiles = fs.readdirSync(originalDir)
+    const originalFiles = fs.readdirSync(ORIGINAL_DIR)
       .filter(filename => {
         // 过滤掉以.开头的隐藏文件和系统文件
         return !filename.startsWith('.') &&
@@ -303,7 +303,7 @@ app.get('/api/images', (req, res) => {
     // 为每个原图查找对应的缩略图
     originalFiles.forEach(filename => {
       try {
-        const fileStats = fs.statSync(path.join(originalDir, filename));
+        const fileStats = fs.statSync(path.join(ORIGINAL_DIR, filename));
 
         // 提取文件名
         const filenameParts = filename.split('_');
@@ -319,7 +319,7 @@ app.get('/api/images', (req, res) => {
         const randomPart = filenameParts.length >= 3 ? filenameParts[2].split('.')[0] : '';
 
         // 查找匹配的缩略图：使用更宽松的匹配逻辑
-        const thumbnailFile = fs.readdirSync(thumbnailsDir)
+        const thumbnailFile = fs.readdirSync(THUMBNAILS_DIR)
           .filter(file => !file.startsWith('.'))  // 同样过滤掉隐藏文件
           .find(file => {
             // 如果时间戳相同，认为是同一组文件
@@ -370,11 +370,11 @@ app.delete('/api/images/batch-delete', (req, res) => {
       const timeStampPart = idParts.length >= 2 ? idParts[1] : '';
 
       // 查找匹配的文件
-      const originalFile = fs.readdirSync(originalDir)
+      const originalFile = fs.readdirSync(ORIGINAL_DIR)
         .filter(file => !file.startsWith('.'))
         .find(file => file.includes(timeStampPart));
 
-      const thumbnailFile = fs.readdirSync(thumbnailsDir)
+      const thumbnailFile = fs.readdirSync(THUMBNAILS_DIR)
         .filter(file => !file.startsWith('.'))
         .find(file => file.includes(timeStampPart));
 
@@ -383,13 +383,13 @@ app.delete('/api/images/batch-delete', (req, res) => {
       let thumbnailDeleted = false;
 
       if (originalFile) {
-        originalDeleted = safeUnlink(path.join(originalDir, originalFile));
+        originalDeleted = safeUnlink(path.join(ORIGINAL_DIR, originalFile));
       } else {
         console.log(`未找到原图文件: ${id}`);
       }
 
       if (thumbnailFile) {
-        thumbnailDeleted = safeUnlink(path.join(thumbnailsDir, thumbnailFile));
+        thumbnailDeleted = safeUnlink(path.join(THUMBNAILS_DIR, thumbnailFile));
       } else {
         console.log(`未找到缩略图文件: ${id}`);
       }
@@ -422,11 +422,11 @@ app.delete('/api/images/:id', (req, res) => {
     const timeStampPart = idParts.length >= 2 ? idParts[1] : '';
 
     // 使用更宽松的匹配逻辑查找匹配的文件，同时过滤掉隐藏文件
-    const originalFile = fs.readdirSync(originalDir)
+    const originalFile = fs.readdirSync(ORIGINAL_DIR)
       .filter(file => !file.startsWith('.'))
       .find(file => file.includes(timeStampPart));
 
-    const thumbnailFile = fs.readdirSync(thumbnailsDir)
+    const thumbnailFile = fs.readdirSync(THUMBNAILS_DIR)
       .filter(file => !file.startsWith('.'))
       .find(file => file.includes(timeStampPart));
 
@@ -435,13 +435,13 @@ app.delete('/api/images/:id', (req, res) => {
     let thumbnailDeleted = false;
 
     if (originalFile) {
-      originalDeleted = safeUnlink(path.join(originalDir, originalFile));
+      originalDeleted = safeUnlink(path.join(ORIGINAL_DIR, originalFile));
     } else {
       console.log(`未找到原图文件: ${id}`);
     }
 
     if (thumbnailFile) {
-      thumbnailDeleted = safeUnlink(path.join(thumbnailsDir, thumbnailFile));
+      thumbnailDeleted = safeUnlink(path.join(THUMBNAILS_DIR, thumbnailFile));
     } else {
       console.log(`未找到缩略图文件: ${id}`);
     }
@@ -463,6 +463,6 @@ app.delete('/api/images/:id', (req, res) => {
 // 启动服务器
 app.listen(port, () => {
   console.log(`服务器运行在 http://localhost:${port}`);
-  console.log(`上传目录: ${uploadsDir}`);
+  console.log(`上传目录: ${UPLOADS_DIR}`);
   console.log(`文件大小限制: ${MAX_FILE_SIZE}MB`);
-}); 
+});
