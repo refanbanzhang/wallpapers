@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { MessagePlugin, Dialog } from 'tdesign-vue-next'
+import { MessagePlugin, DialogPlugin } from 'tdesign-vue-next'
 import ImageUpload from '@/components/ImageUpload.vue'
 import { uploadImages, getUploadedImages, deleteImage, formatFileSize } from '@/utils/upload'
+import { MAX_FILE_SIZE, DEFAULT_THUMBNAIL_WIDTH, DEFAULT_THUMBNAIL_HEIGHT, DEFAULT_THUMBNAIL_QUALITY } from '@/constants/sharedConstants'
 
 interface ServerImage {
   id: string
@@ -110,7 +111,7 @@ const handleUploadError = (error: Error) => {
  * 删除图片
  */
 const handleDeleteImage = (id: string) => {
-  Dialog.confirm({
+  DialogPlugin.confirm({
     header: '确认删除',
     body: '确定要删除这张图片吗？此操作不可恢复。',
     confirmBtn: {
@@ -137,7 +138,8 @@ const handleDeleteImage = (id: string) => {
     <p class="page-description">上传图片会自动生成缩略图，支持多种图片格式</p>
 
     <div class="card upload-section">
-      <ImageUpload multiple :max-file-size="10" :thumbnail-width="200" :thumbnail-height="200" :thumbnail-quality="0.7"
+      <ImageUpload multiple :max-file-size="MAX_FILE_SIZE" :thumbnail-width="DEFAULT_THUMBNAIL_WIDTH"
+        :thumbnail-height="DEFAULT_THUMBNAIL_HEIGHT" :thumbnail-quality="DEFAULT_THUMBNAIL_QUALITY"
         @upload-success="handleUploadSuccess" @upload-success-multiple="handleUploadSuccessMultiple"
         @upload-error="handleUploadError" />
     </div>

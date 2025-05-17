@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { generateThumbnail } from '@/utils/image'
 import { Loading, MessagePlugin, Progress } from 'tdesign-vue-next'
+import { MAX_FILE_SIZE, DEFAULT_THUMBNAIL_WIDTH, DEFAULT_THUMBNAIL_HEIGHT, DEFAULT_THUMBNAIL_QUALITY } from '@/constants/sharedConstants'
 
 const props = defineProps<{
   maxFileSize?: number // 最大文件大小，单位MB
@@ -29,10 +30,10 @@ const uploadTotal = ref(0)
 const uploadCompleted = ref(0)
 
 // 设置默认值
-const maxFileSize = props.maxFileSize || 10 // 默认10MB
-const thumbnailWidth = props.thumbnailWidth || 200
-const thumbnailHeight = props.thumbnailHeight || 200
-const thumbnailQuality = props.thumbnailQuality || 0.7
+const maxFileSize = props.maxFileSize || MAX_FILE_SIZE
+const thumbnailWidth = props.thumbnailWidth || DEFAULT_THUMBNAIL_WIDTH
+const thumbnailHeight = props.thumbnailHeight || DEFAULT_THUMBNAIL_HEIGHT
+const thumbnailQuality = props.thumbnailQuality || DEFAULT_THUMBNAIL_QUALITY
 
 /**
  * 打开文件选择器
