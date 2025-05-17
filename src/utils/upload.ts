@@ -87,6 +87,31 @@ export const deleteImage = async (id: string) => {
 }
 
 /**
+ * 批量删除图片
+ * @param ids 图片ID数组
+ */
+export const deleteMultipleImages = async (ids: string[]) => {
+  try {
+    const response = await fetch(`/api/images/batch-delete`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ids }),
+    })
+
+    if (!response.ok) {
+      throw new Error('批量删除图片失败')
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('批量删除图片失败:', error)
+    throw error
+  }
+}
+
+/**
  * 格式化文件大小
  * @param size 文件大小（字节）
  * @returns 格式化的文件大小字符串

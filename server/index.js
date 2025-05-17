@@ -352,6 +352,66 @@ app.get('/api/images', (req, res) => {
   }
 });
 
+// 批量删除图片
+app.delete('/api/images/batch-delete', (req, res) => {
+  try {
+    const { ids } = req.body;
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: '请提供有效的图片ID列表' });
+    }
+
+    const results = [];
+
+    // 处理每个图片ID
+    for (const id of ids) {
+      // 从ID中提取时间戳部分
+      const idParts = id.split('_');
+      const timeStampPart = idParts.length >= 2 ? idParts[1] : '';
+
+      // 查找匹配的文件
+      const originalFile = fs.readdirSync(originalDir)
+        .filter(file => !file.startsWith('.'))
+        .find(file => file.includes(timeStampPart));
+
+      const thumbnailFile = fs.readdirSync(thumbnailsDir)
+        .filter(file => !file.startsWith('.'))
+        .find(file => file.includes(timeStampPart));
+
+      // 删除文件
+      let originalDeleted = false;
+      let thumbnailDeleted = false;
+
+      if (originalFile) {
+        originalDeleted = safeUnlink(path.join(originalDir, originalFile));
+      } else {
+        console.log(`未找到原图文件: ${id}`);
+      }
+
+      if (thumbnailFile) {
+        thumbnailDeleted = safeUnlink(path.join(thumbnailsDir, thumbnailFile));
+      } else {
+        console.log(`未找到缩略图文件: ${id}`);
+      }
+
+      results.push({
+        id,
+        originalDeleted,
+        thumbnailDeleted
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `成功删除 ${results.filter(r => r.originalDeleted || r.thumbnailDeleted).length} 张图片`,
+      details: results
+    });
+  } catch (error) {
+    console.error('批量删除图片失败:', error);
+    res.status(500).json({ error: '批量删除图片失败', message: error.message });
+  }
+});
+
 // 删除图片
 app.delete('/api/images/:id', (req, res) => {
   try {

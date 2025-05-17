@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { MessagePlugin, DialogPlugin } from 'tdesign-vue-next'
+import { ref, onMounted, computed } from 'vue'
+import { MessagePlugin, DialogPlugin, Loading } from 'tdesign-vue-next'
 import ImageUpload from '@/components/ImageUpload.vue'
-import { uploadImage, getUploadedImages, deleteImage, formatFileSize } from '@/utils/upload'
+import { uploadImage, getUploadedImages, deleteImage, formatFileSize, deleteMultipleImages } from '@/utils/upload'
 import { MAX_FILE_SIZE, DEFAULT_THUMBNAIL_WIDTH, DEFAULT_THUMBNAIL_HEIGHT, DEFAULT_THUMBNAIL_QUALITY } from '@/constants/sharedConstants'
 
 interface ServerImage {
@@ -28,6 +28,45 @@ const uploadedImages = ref<UploadedImage[]>([])
 const loading = ref(false)
 // 是否只进行质量压缩，不生成缩略图（不改变图片尺寸）
 const compressOnlyQuality = ref(true)
+
+// 选中的图片IDs
+const selectedImageIds = ref<string[]>([])
+
+// 是否处于选择模式
+const isSelectionMode = ref(false)
+
+// 是否全选
+const isAllSelected = computed(() => {
+  return uploadedImages.value.length > 0 && selectedImageIds.value.length === uploadedImages.value.length
+})
+
+// 切换选择模式
+const toggleSelectionMode = () => {
+  isSelectionMode.value = !isSelectionMode.value
+  // 退出选择模式时清空选择
+  if (!isSelectionMode.value) {
+    selectedImageIds.value = []
+  }
+}
+
+// 选择或取消选择图片
+const toggleSelection = (id: string) => {
+  const index = selectedImageIds.value.indexOf(id)
+  if (index === -1) {
+    selectedImageIds.value.push(id)
+  } else {
+    selectedImageIds.value.splice(index, 1)
+  }
+}
+
+// 全选/取消全选
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    selectedImageIds.value = []
+  } else {
+    selectedImageIds.value = uploadedImages.value.map(image => image.id)
+  }
+}
 
 // 获取已上传图片列表
 const fetchUploadedImages = async () => {
@@ -117,7 +156,7 @@ const handleUploadError = (error: Error) => {
  * 删除图片
  */
 const handleDeleteImage = (id: string) => {
-  DialogPlugin.confirm({
+  const dialog = DialogPlugin.confirm({
     header: '确认删除',
     body: '确定要删除这张图片吗？此操作不可恢复。',
     confirmBtn: {
@@ -132,6 +171,42 @@ const handleDeleteImage = (id: string) => {
         MessagePlugin.success('删除成功')
       } catch {
         MessagePlugin.error('删除失败')
+      } finally {
+        // 确保对话框关闭
+        dialog.hide()
+      }
+    },
+  })
+}
+
+// 批量删除图片
+const handleBatchDelete = () => {
+  if (selectedImageIds.value.length === 0) {
+    MessagePlugin.warning('请先选择要删除的图片')
+    return
+  }
+
+  const dialog = DialogPlugin.confirm({
+    header: '确认批量删除',
+    body: `确定要删除选中的 ${selectedImageIds.value.length} 张图片吗？此操作不可恢复。`,
+    confirmBtn: {
+      content: '删除',
+      theme: 'danger',
+    },
+    cancelBtn: '取消',
+    onConfirm: async () => {
+      try {
+        loading.value = true
+        await deleteMultipleImages(selectedImageIds.value)
+        await fetchUploadedImages()
+        selectedImageIds.value = []
+        isSelectionMode.value = false
+        MessagePlugin.success('批量删除成功')
+      } catch {
+        MessagePlugin.error('批量删除失败')
+      } finally {
+        loading.value = false
+        dialog.hide()
       }
     },
   })
@@ -158,12 +233,33 @@ const handleDeleteImage = (id: string) => {
     </div>
 
     <div class="uploaded-list" v-else-if="uploadedImages.length > 0">
-      <h2 class="section-title">已上传图片</h2>
+      <div class="section-header">
+        <h2 class="section-title">已上传图片</h2>
+        <div class="section-actions">
+          <button class="btn" :class="{ 'btn-primary': isSelectionMode, 'btn-secondary': !isSelectionMode }"
+            @click="toggleSelectionMode">
+            {{ isSelectionMode ? '退出选择' : '选择图片' }}
+          </button>
+          <button v-if="isSelectionMode" class="btn btn-secondary" @click="toggleSelectAll">
+            {{ isAllSelected ? '取消全选' : '全选' }}
+          </button>
+          <button v-if="isSelectionMode" class="btn btn-danger" @click="handleBatchDelete"
+            :disabled="selectedImageIds.length === 0">
+            批量删除 ({{ selectedImageIds.length }})
+          </button>
+        </div>
+      </div>
 
       <div class="list-container">
-        <div v-for="image in uploadedImages" :key="image.id" class="image-item card">
+        <div v-for="image in uploadedImages" :key="image.id" class="image-item card"
+          :class="{ 'image-selected': selectedImageIds.includes(image.id) }">
           <div class="thumbnail-container">
             <img :src="image.thumbnailUrl" alt="缩略图" class="thumbnail" />
+            <div v-if="isSelectionMode" class="selection-overlay" @click="toggleSelection(image.id)">
+              <div class="checkbox-container">
+                <span class="checkbox" :class="{ 'checked': selectedImageIds.includes(image.id) }"></span>
+              </div>
+            </div>
           </div>
           <div class="image-info">
             <div class="file-name">{{ image.fileName }}</div>
@@ -277,6 +373,7 @@ const handleDeleteImage = (id: string) => {
   overflow: hidden;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
+  position: relative;
 }
 
 .thumbnail {
@@ -378,6 +475,75 @@ const handleDeleteImage = (id: string) => {
 
 .empty-action {
   font-size: 14px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.selection-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.image-item:hover .selection-overlay {
+  opacity: 1;
+}
+
+.image-selected .selection-overlay {
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.checkbox-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.checkbox {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 2px solid white;
+  background-color: transparent;
+  position: relative;
+}
+
+.checkbox.checked {
+  background-color: var(--td-brand-color);
+  border-color: var(--td-brand-color);
+}
+
+.checkbox.checked::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 9px;
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 @media (max-width: 768px) {
