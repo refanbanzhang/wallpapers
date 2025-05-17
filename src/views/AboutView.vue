@@ -30,7 +30,6 @@
 <style scoped>
 .about-content {
   margin: 0 auto;
-  max-width: 800px;
 }
 
 .about-description {
