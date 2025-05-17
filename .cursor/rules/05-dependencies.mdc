@@ -1,0 +1,37 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 项目依赖说明
+
+## 核心依赖
+项目的核心依赖在[package.json](mdc:package.json)中定义：
+
+### 前端依赖
+- `vue` - Vue 3框架
+- `vue-router` - Vue官方路由
+- `pinia` - Vue官方状态管理
+- `tdesign-vue-next` - 腾讯设计团队的UI组件库
+
+### 后端依赖
+- `express` - Node.js Web框架
+- `cors` - 处理跨域资源共享
+- `multer` - 处理文件上传
+
+## 开发依赖
+- `vite` - 现代前端构建工具
+- `typescript` - JavaScript的超集，提供类型系统
+- `eslint` - 代码质量检查工具
+- `prettier` - 代码格式化工具
+- `concurrently` - 同时运行多个命令的工具
+
+## 依赖更新指南
+- 更新依赖前先做好备份
+- 使用`npm outdated`检查过期依赖
+- 使用`npm update`更新非主版本依赖
+- 主版本更新需谨慎，确保兼容性
+
+## 构建工具
+项目使用Vite作为构建工具：
+- [vite.config.ts](mdc:vite.config.ts) - Vite配置文件
