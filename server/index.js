@@ -12,10 +12,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // 常量设置 - 与前端保持一致
-const MAX_FILE_SIZE = 20; // 单位MB
+// 单位MB
+const MAX_FILE_SIZE = 20;
 const DEFAULT_THUMBNAIL_WIDTH = 200;
 const DEFAULT_THUMBNAIL_HEIGHT = 200;
-const DEFAULT_THUMBNAIL_QUALITY = 70; // Sharp使用1-100的质量范围，而不是0-1
+// Sharp使用1-100的质量范围，而不是0-1
+const DEFAULT_THUMBNAIL_QUALITY = 70;
 
 const app = express();
 const port = 3000;
@@ -103,7 +105,8 @@ const generateSafeFilename = (originalName) => {
 
     // 判断文件名长度
     const fullFilename = `${sanitizedBasename}_${timestamp}_${randomString}${extname}`;
-    const maxFilenameLength = 240; // 大多数文件系统的文件名长度限制
+    // 大多数文件系统的文件名长度限制
+    const maxFilenameLength = 240;
 
     // 如果文件名超长，则使用哈希替代
     if (Buffer.from(fullFilename).length > maxFilenameLength) {
@@ -199,7 +202,8 @@ const storage = multer.diskStorage({
 
       // 创建完整文件名
       const fullFilename = `${sanitizedBasename}_${filenameBase}${extname}`;
-      const maxFilenameLength = 240; // 大多数文件系统的文件名长度限制
+      // 大多数文件系统的文件名长度限制
+      const maxFilenameLength = 240;
 
       // 如果文件名超长，使用哈希替代
       if (Buffer.from(fullFilename).length > maxFilenameLength) {
@@ -218,7 +222,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: MAX_FILE_SIZE * 1024 * 1024 } // 限制使用常量定义
+  // 限制使用常量定义
+  limits: { fileSize: MAX_FILE_SIZE * 1024 * 1024 }
 });
 
 // 生成文件名基础的中间件
