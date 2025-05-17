@@ -52,11 +52,11 @@ const handleUploadError = (error: Error) => {
 </script>
 
 <template>
-  <div class="upload-container">
+  <div class="page-container">
     <h1 class="page-title">图片上传</h1>
     <p class="page-description">上传图片会自动生成缩略图，支持多种图片格式</p>
 
-    <div class="upload-section">
+    <div class="card upload-section">
       <ImageUpload :max-file-size="10" :thumbnail-width="200" :thumbnail-height="200" :thumbnail-quality="0.7"
         @upload-success="handleUploadSuccess" @upload-error="handleUploadError" />
     </div>
@@ -65,7 +65,7 @@ const handleUploadError = (error: Error) => {
       <h2 class="section-title">已上传图片</h2>
 
       <div class="list-container">
-        <div v-for="(image, index) in uploadedImages" :key="index" class="image-item">
+        <div v-for="(image, index) in uploadedImages" :key="index" class="image-item card">
           <div class="thumbnail-container">
             <img :src="image.thumbnail" alt="缩略图" class="thumbnail" />
           </div>
@@ -77,10 +77,10 @@ const handleUploadError = (error: Error) => {
             </div>
           </div>
           <div class="image-actions">
-            <a :href="image.original" download target="_blank" class="action-button">
+            <a :href="image.original" download target="_blank" class="btn btn-primary">
               下载原图
             </a>
-            <a :href="image.thumbnail" download target="_blank" class="action-button">
+            <a :href="image.thumbnail" download target="_blank" class="btn btn-secondary">
               下载缩略图
             </a>
           </div>
@@ -88,7 +88,7 @@ const handleUploadError = (error: Error) => {
       </div>
     </div>
 
-    <div class="empty-state" v-else>
+    <div class="empty-state card" v-else>
       <div class="empty-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
           <path fill="currentColor"
@@ -101,47 +101,26 @@ const handleUploadError = (error: Error) => {
 </template>
 
 <style scoped>
-.upload-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.page-title {
-  font-size: 24px;
-  margin-bottom: 8px;
-  color: #333;
-}
-
 .page-description {
   font-size: 14px;
-  color: #666;
-  margin-bottom: 24px;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
 }
 
 .upload-section {
-  margin-bottom: 32px;
-}
-
-.section-title {
-  font-size: 18px;
-  margin-bottom: 16px;
-  color: #333;
+  margin-bottom: var(--spacing-xl);
 }
 
 .list-container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-md);
 }
 
 .image-item {
   display: flex;
   align-items: center;
-  padding: 12px;
-  border-radius: 8px;
-  background-color: #f5f5f5;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: var(--spacing-md);
 }
 
 .thumbnail-container {
@@ -149,7 +128,7 @@ const handleUploadError = (error: Error) => {
   height: 60px;
   overflow: hidden;
   border-radius: 4px;
-  margin-right: 12px;
+  margin-right: var(--spacing-md);
   flex-shrink: 0;
 }
 
@@ -166,7 +145,7 @@ const handleUploadError = (error: Error) => {
 .file-name {
   font-size: 14px;
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -175,41 +154,27 @@ const handleUploadError = (error: Error) => {
 
 .file-meta {
   display: flex;
-  gap: 16px;
+  gap: var(--spacing-md);
   font-size: 12px;
-  color: #999;
-  margin-top: 4px;
+  color: var(--text-tertiary);
+  margin-top: var(--spacing-xs);
 }
 
 .image-actions {
   display: flex;
-  gap: 8px;
-}
-
-.action-button {
-  padding: 6px 12px;
-  font-size: 12px;
-  border-radius: 4px;
-  background-color: #0052d9;
-  color: white;
-  text-decoration: none;
-  transition: background-color 0.3s;
-}
-
-.action-button:hover {
-  background-color: #003eb3;
+  gap: var(--spacing-sm);
 }
 
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px 0;
-  color: #ccc;
+  padding: var(--spacing-xl) 0;
+  color: var(--text-tertiary);
 }
 
 .empty-icon {
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-md);
 }
 
 .empty-text {

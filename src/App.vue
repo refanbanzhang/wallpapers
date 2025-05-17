@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import 'tdesign-vue-next/es/style/index.css'
 import { RouterView, RouterLink } from 'vue-router'
 </script>
 
@@ -13,40 +12,48 @@ import { RouterView, RouterLink } from 'vue-router'
         <RouterLink to="/about" class="nav-link">关于</RouterLink>
       </div>
     </div>
-    <RouterView />
+    <div class="main-content">
+      <RouterView />
+    </div>
   </div>
 </template>
 
 <style scoped>
 .app-container {
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-light);
 }
 
 .nav-header {
-  background-color: #0052d9;
+  background-color: var(--primary-color);
   color: white;
-  padding: 10px 20px;
+  padding: var(--spacing-sm) var(--spacing-lg);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-shadow: var(--box-shadow);
 }
 
 .nav-links {
   display: flex;
-  gap: 20px;
+  gap: var(--spacing-lg);
 }
 
 .nav-link {
   color: white;
   text-decoration: none;
   font-size: 16px;
-  padding: 5px 10px;
+  padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: 4px;
   transition: background-color 0.3s;
 }
 
 .nav-link:hover {
   background-color: rgba(255, 255, 255, 0.2);
+}
+
+.main-content {
+  padding: var(--spacing-md);
 }
 </style>

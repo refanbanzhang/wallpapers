@@ -38,7 +38,6 @@ const openFileSelector = () => {
 const handleFileChange = async (event: Event) => {
   const target = event.target as HTMLInputElement
   const files = target.files
-  debugger
 
   if (!files || files.length === 0) {
     return
@@ -139,8 +138,8 @@ const resetFileInput = () => {
 .upload-area {
   width: 100%;
   height: 200px;
-  border: 2px dashed #ccc;
-  border-radius: 8px;
+  border: 2px dashed var(--border-color);
+  border-radius: var(--border-radius);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -151,29 +150,29 @@ const resetFileInput = () => {
 }
 
 .upload-area:hover {
-  border-color: #0052d9;
+  border-color: var(--primary-color);
 }
 
 .upload-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #888;
+  color: var(--text-secondary);
 }
 
 .upload-icon {
-  margin-bottom: 8px;
-  color: #0052d9;
+  margin-bottom: var(--spacing-sm);
+  color: var(--primary-color);
 }
 
 .upload-text {
   font-size: 16px;
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .upload-hint {
   font-size: 12px;
-  color: #999;
+  color: var(--text-tertiary);
 }
 
 .loading-container {
@@ -183,9 +182,9 @@ const resetFileInput = () => {
 }
 
 .loading-text {
-  margin-top: 8px;
+  margin-top: var(--spacing-sm);
   font-size: 14px;
-  color: #888;
+  color: var(--text-secondary);
 }
 
 .preview-container {

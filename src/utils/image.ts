@@ -100,4 +100,28 @@ export const base64ToBlob = (base64: string): Blob => {
   }
   
   return new Blob([uInt8Array], { type: contentType });
+};
+
+/**
+ * 获取图片分辨率
+ * @param imageUrl 图片URL
+ * @returns Promise<{width: number, height: number}> 图片宽高
+ */
+export const getImageResolution = (imageUrl: string): Promise<{width: number, height: number}> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    
+    img.onload = () => {
+      resolve({
+        width: img.width,
+        height: img.height
+      });
+    };
+    
+    img.onerror = () => {
+      reject(new Error('获取图片分辨率失败'));
+    };
+    
+    img.src = imageUrl;
+  });
 }; 

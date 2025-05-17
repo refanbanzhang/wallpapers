@@ -1,11 +1,12 @@
 import './assets/main.css'
+import './assets/styles/global.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import TDesign from 'tdesign-vue-next'
 import 'tdesign-vue-next/es/style/index.css'
 
-import App from './App.vue'
+import App from '@/App.vue'
 import router from './router'
 
 const app = createApp(App)
