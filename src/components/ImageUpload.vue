@@ -20,7 +20,7 @@ const loading = ref(false)
 const previewUrl = ref<string>('')
 
 // 设置默认值
-const maxFileSize = props.maxFileSize || 10 // 默认5MB
+const maxFileSize = props.maxFileSize || 10 // 默认10MB
 const thumbnailWidth = props.thumbnailWidth || 200
 const thumbnailHeight = props.thumbnailHeight || 200
 const thumbnailQuality = props.thumbnailQuality || 0.7
@@ -73,7 +73,7 @@ const handleFileChange = async (event: Event) => {
     // 显示预览
     previewUrl.value = thumbnail
 
-    // 触发上传成功事件
+    // 触发上传成功事件，让父组件处理上传到服务器
     emit('upload-success', { original, thumbnail, file })
   } catch (error) {
     console.error('生成缩略图失败:', error)

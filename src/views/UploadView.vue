@@ -1,45 +1,75 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { MessagePlugin } from 'tdesign-vue-next'
+import { ref, onMounted } from 'vue'
+import { MessagePlugin, Dialog } from 'tdesign-vue-next'
 import ImageUpload from '@/components/ImageUpload.vue'
+import { uploadImages, getUploadedImages, deleteImage, formatFileSize } from '@/utils/upload'
+
+interface ServerImage {
+  id: string
+  originalUrl: string
+  thumbnailUrl: string
+  fileName: string
+  fileSize: number
+  uploadTime: string
+}
 
 interface UploadedImage {
-  original: string
-  thumbnail: string
+  id: string
+  originalUrl: string
+  thumbnailUrl: string
   fileName: string
   fileSize: string
   uploadTime: string
 }
 
+// 已上传图片列表
 const uploadedImages = ref<UploadedImage[]>([])
+const loading = ref(false)
+
+// 获取已上传图片列表
+const fetchUploadedImages = async () => {
+  try {
+    loading.value = true
+    const images = await getUploadedImages() as ServerImage[]
+    uploadedImages.value = images.map((image) => ({
+      ...image,
+      fileSize: formatFileSize(image.fileSize)
+    }))
+  } catch (error) {
+    console.error('获取图片列表失败:', error)
+    MessagePlugin.error('获取图片列表失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 组件挂载时获取图片列表
+onMounted(() => {
+  fetchUploadedImages()
+})
 
 /**
  * 处理上传成功事件
  */
-const handleUploadSuccess = (data: { original: string, thumbnail: string, file: File }) => {
+const handleUploadSuccess = async (data: { original: string, thumbnail: string, file: File }) => {
   const { original, thumbnail, file } = data
 
-  // 格式化文件大小
-  const formatFileSize = (size: number): string => {
-    if (size < 1024) {
-      return size + ' B'
-    } else if (size < 1024 * 1024) {
-      return (size / 1024).toFixed(2) + ' KB'
-    } else {
-      return (size / (1024 * 1024)).toFixed(2) + ' MB'
-    }
+  try {
+    loading.value = true
+
+    // 上传到服务器
+    await uploadImages(original, thumbnail, file.name)
+
+    // 获取最新的图片列表
+    await fetchUploadedImages()
+
+    MessagePlugin.success('上传成功')
+  } catch (error) {
+    console.error('上传失败:', error)
+    MessagePlugin.error(`上传失败: ${error instanceof Error ? error.message : '未知错误'}`)
+  } finally {
+    loading.value = false
   }
-
-  // 添加到上传列表
-  uploadedImages.value.unshift({
-    original,
-    thumbnail,
-    fileName: file.name,
-    fileSize: formatFileSize(file.size),
-    uploadTime: new Date().toLocaleString()
-  })
-
-  MessagePlugin.success('上传成功')
 }
 
 /**
@@ -48,6 +78,30 @@ const handleUploadSuccess = (data: { original: string, thumbnail: string, file: 
 const handleUploadError = (error: Error) => {
   console.error('上传失败:', error)
   MessagePlugin.error(`上传失败: ${error.message}`)
+}
+
+/**
+ * 删除图片
+ */
+const handleDeleteImage = (id: string) => {
+  Dialog.confirm({
+    header: '确认删除',
+    body: '确定要删除这张图片吗？此操作不可恢复。',
+    confirmBtn: {
+      content: '删除',
+      theme: 'danger',
+    },
+    cancelBtn: '取消',
+    onConfirm: async () => {
+      try {
+        await deleteImage(id)
+        await fetchUploadedImages()
+        MessagePlugin.success('删除成功')
+      } catch {
+        MessagePlugin.error('删除失败')
+      }
+    },
+  })
 }
 </script>
 
@@ -61,13 +115,20 @@ const handleUploadError = (error: Error) => {
         @upload-success="handleUploadSuccess" @upload-error="handleUploadError" />
     </div>
 
-    <div class="uploaded-list" v-if="uploadedImages.length > 0">
+    <div v-if="loading" class="loading-section">
+      <div class="loading-container">
+        <Loading size="medium" />
+        <span class="loading-text">加载中...</span>
+      </div>
+    </div>
+
+    <div class="uploaded-list" v-else-if="uploadedImages.length > 0">
       <h2 class="section-title">已上传图片</h2>
 
       <div class="list-container">
-        <div v-for="(image, index) in uploadedImages" :key="index" class="image-item card">
+        <div v-for="image in uploadedImages" :key="image.id" class="image-item card">
           <div class="thumbnail-container">
-            <img :src="image.thumbnail" alt="缩略图" class="thumbnail" />
+            <img :src="image.thumbnailUrl" alt="缩略图" class="thumbnail" />
           </div>
           <div class="image-info">
             <div class="file-name">{{ image.fileName }}</div>
@@ -77,12 +138,15 @@ const handleUploadError = (error: Error) => {
             </div>
           </div>
           <div class="image-actions">
-            <a :href="image.original" download target="_blank" class="btn btn-primary">
+            <a :href="image.originalUrl" :download="image.fileName" class="btn btn-primary">
               下载原图
             </a>
-            <a :href="image.thumbnail" download target="_blank" class="btn btn-secondary">
+            <a :href="image.thumbnailUrl" :download="`缩略图_${image.fileName}`" class="btn btn-secondary">
               下载缩略图
             </a>
+            <button class="btn btn-danger" @click="handleDeleteImage(image.id)">
+              删除
+            </button>
           </div>
         </div>
       </div>
@@ -109,6 +173,24 @@ const handleUploadError = (error: Error) => {
 
 .upload-section {
   margin-bottom: var(--spacing-xl);
+}
+
+.loading-section {
+  display: flex;
+  justify-content: center;
+  margin: var(--spacing-xl) 0;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loading-text {
+  margin-top: var(--spacing-sm);
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 
 .list-container {
@@ -163,6 +245,33 @@ const handleUploadError = (error: Error) => {
 .image-actions {
   display: flex;
   gap: var(--spacing-sm);
+}
+
+.btn {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: var(--info-color, #0052d9);
+  color: white;
+}
+
+.btn-danger {
+  background-color: var(--danger-color, #e34d59);
+  color: white;
+  border: none;
 }
 
 .empty-state {
