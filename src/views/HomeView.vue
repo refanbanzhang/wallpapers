@@ -114,7 +114,8 @@ const handleDownload = async () => {
       </div>
     </div>
 
-    <t-dialog :visible="dialogVisible" :header="currentWallpaper?.fileName" attach="body" @close="onCloseDialog">
+    <t-dialog :visible="dialogVisible" :header="currentWallpaper?.fileName" attach="body" @close="onCloseDialog"
+      class="wallpaper-dialog" width="auto" top="5%">
       <div v-if="currentWallpaper" class="dialog-content">
         <img :src="`http://localhost:3000${currentWallpaper.originalUrl}`" :alt="currentWallpaper.fileName"
           class="dialog-image" />
@@ -193,12 +194,13 @@ const handleDownload = async () => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: var(--spacing-lg);
+  width: 90vw;
+  max-width: 1200px;
 }
 
 .dialog-image {
   max-width: 100%;
-  max-height: 70vh;
+  max-height: 80vh;
   object-fit: contain;
   border-radius: var(--border-radius);
 }
@@ -231,5 +233,13 @@ const handleDownload = async () => {
   text-align: center;
   margin-top: 50px;
   color: var(--text-secondary);
+}
+
+.wallpaper-dialog :deep(.t-dialog__body) {
+  padding: 16px;
+}
+
+.wallpaper-dialog :deep(.t-dialog__header) {
+  padding: 16px 24px;
 }
 </style>
