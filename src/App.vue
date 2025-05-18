@@ -7,21 +7,9 @@ import { RouterView, RouterLink } from 'vue-router'
     <div class="nav-header">
       <h1>壁纸应用</h1>
       <div class="nav-links">
-        <RouterLink
-          to="/"
-          class="nav-link"
-          >首页</RouterLink
-        >
-        <RouterLink
-          to="/upload"
-          class="nav-link"
-          >上传</RouterLink
-        >
-        <RouterLink
-          to="/about"
-          class="nav-link"
-          >关于</RouterLink
-        >
+        <RouterLink to="/" class="nav-link" active-class="active-link" exact>首页</RouterLink>
+        <RouterLink to="/upload" class="nav-link" active-class="active-link">上传</RouterLink>
+        <RouterLink to="/about" class="nav-link" active-class="active-link">关于</RouterLink>
       </div>
     </div>
     <div class="main-content">
@@ -63,6 +51,12 @@ import { RouterView, RouterLink } from 'vue-router'
 
 .nav-link:hover {
   background-color: rgba(255, 255, 255, 0.2);
+}
+
+.active-link {
+  background-color: rgba(255, 255, 255, 0.3);
+  font-weight: bold;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
 }
 
 .main-content {
