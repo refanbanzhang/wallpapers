@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { Dialog as TDialog, Button as TButton, Loading as TLoading } from 'tdesign-vue-next'
+import { ref, onMounted, computed } from 'vue'
+import { Dialog as TDialog, Button as TButton, Loading as TLoading, Tabs as TTabs, TabPanel as TTabPanel } from 'tdesign-vue-next'
+import type { TabValue } from 'tdesign-vue-next'
 import { downloadWallpaper } from '@/utils/download'
 import { getImageResolution } from '@/utils/image'
 
@@ -11,17 +12,35 @@ interface Wallpaper {
   thumbnailUrl: string
   fileSize: number
   uploadTime: string
+  category?: string
   resolution?: {
     width: number
     height: number
   }
 }
 
+// 分类列表
+const categories = [
+  { value: 'all', label: '全部' },
+  { value: 'nature', label: '自然' },
+  { value: 'beauty', label: '美女' },
+  { value: 'anime', label: '动漫' }
+]
+
 const wallpapers = ref<Wallpaper[]>([])
 const dialogVisible = ref(false)
 const currentWallpaper = ref<Wallpaper | null>(null)
 const loading = ref(false)
 const isLoading = ref(false)
+const activeCategory = ref('all')
+
+// 按分类筛选壁纸
+const filteredWallpapers = computed(() => {
+  if (activeCategory.value === 'all') {
+    return wallpapers.value
+  }
+  return wallpapers.value.filter(wallpaper => wallpaper.category === activeCategory.value)
+})
 
 // 从API获取壁纸数据
 const fetchWallpapers = async () => {
@@ -31,7 +50,16 @@ const fetchWallpapers = async () => {
     const result = await response.json()
 
     if (result.success) {
-      wallpapers.value = result.data
+      // 临时模拟分类数据，实际项目中应该从后端获取
+      wallpapers.value = result.data.map((wallpaper: Wallpaper) => {
+        // 随机分配分类，实际项目中应该使用真实数据
+        const categories = ['nature', 'beauty', 'anime']
+        const randomIndex = Math.floor(Math.random() * categories.length)
+        return {
+          ...wallpaper,
+          category: categories[randomIndex]
+        }
+      })
       // 获取所有壁纸的分辨率
       loadResolutions()
     } else {
@@ -42,6 +70,11 @@ const fetchWallpapers = async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+// 切换分类
+const handleCategoryChange = (value: TabValue) => {
+  activeCategory.value = value as string
 }
 
 // 获取所有壁纸的分辨率
@@ -102,14 +135,24 @@ const handleDownload = async () => {
       没有找到壁纸，请上传一些壁纸
     </div>
 
-    <div v-else class="wallpapers-grid">
-      <div class="wallpaper-card" v-for="wallpaper in wallpapers" :key="wallpaper.id" @click="onOpenModal(wallpaper)">
-        <img :src="`http://localhost:3000${wallpaper.thumbnailUrl}`" :alt="wallpaper.fileName" />
-        <div class="wallpaper-info">
-          <span class="wallpaper-name">{{ wallpaper.fileName }}</span>
-          <span class="wallpaper-resolution" v-if="wallpaper.resolution">
-            {{ wallpaper.resolution.width }} × {{ wallpaper.resolution.height }}
-          </span>
+    <div v-else>
+      <t-tabs v-model="activeCategory" @change="handleCategoryChange">
+        <t-tab-panel v-for="item in categories" :key="item.value" :value="item.value" :label="item.label" />
+      </t-tabs>
+
+      <div class="wallpapers-grid">
+        <div class="wallpaper-card" v-for="wallpaper in filteredWallpapers" :key="wallpaper.id"
+          @click="onOpenModal(wallpaper)">
+          <img :src="`http://localhost:3000${wallpaper.thumbnailUrl}`" :alt="wallpaper.fileName" />
+          <div class="wallpaper-info">
+            <span class="wallpaper-name">{{ wallpaper.fileName }}</span>
+            <span class="wallpaper-resolution" v-if="wallpaper.resolution">
+              {{ wallpaper.resolution.width }} × {{ wallpaper.resolution.height }}
+            </span>
+          </div>
+          <div class="wallpaper-category" :class="wallpaper.category">
+            {{categories.find(cat => cat.value === wallpaper.category)?.label}}
+          </div>
         </div>
       </div>
     </div>
@@ -122,6 +165,9 @@ const handleDownload = async () => {
         <div class="dialog-image-info">
           <p>上传时间: {{ currentWallpaper.uploadTime }}</p>
           <p>文件大小: {{ Math.round(currentWallpaper.fileSize / 1024) }} KB</p>
+          <p v-if="currentWallpaper.category">
+            分类: {{categories.find(cat => cat.value === currentWallpaper?.category)?.label}}
+          </p>
         </div>
       </div>
       <template #footer>
@@ -176,6 +222,29 @@ const handleDownload = async () => {
   font-size: 12px;
   display: flex;
   justify-content: space-between;
+}
+
+.wallpaper-category {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #fff;
+  font-weight: 500;
+}
+
+.wallpaper-category.nature {
+  background-color: rgba(0, 128, 0, 0.7);
+}
+
+.wallpaper-category.beauty {
+  background-color: rgba(255, 105, 180, 0.7);
+}
+
+.wallpaper-category.anime {
+  background-color: rgba(65, 105, 225, 0.7);
 }
 
 .wallpaper-resolution {
