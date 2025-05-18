@@ -21,13 +21,23 @@ export const downloadImage = async (options: DownloadOptions): Promise<void> => 
   }
 
   try {
+    // 使用fetch获取图片数据
+    const response = await fetch(url)
+    const blob = await response.blob()
+
+    // 创建临时URL
+    const objectURL = URL.createObjectURL(blob)
+
     // 创建a标签来下载
     const link = document.createElement('a')
-    link.href = url
+    link.href = objectURL
     link.download = `${filename}.${extension}`
     document.body.appendChild(link)
     link.click()
+
+    // 清理
     document.body.removeChild(link)
+    URL.revokeObjectURL(objectURL)
   } catch (error) {
     console.error('下载失败', error)
     throw error
