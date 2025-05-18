@@ -127,32 +127,6 @@ const generateSafeFilename = (originalName) => {
 };
 
 /**
- * 压缩图片
- * @param {string} originalFilePath 原图路径
- * @param {string} outputFilePath 输出图片保存路径
- * @param {number} quality 图片质量(1-100)
- * @returns {Promise<boolean>} 是否成功
- */
-const compressImage = async (
-  originalFilePath,
-  outputFilePath,
-  quality = DEFAULT_THUMBNAIL_QUALITY
-) => {
-  try {
-    // 使用Sharp处理图片，只调整质量，不改变尺寸
-    await sharp(originalFilePath)
-      .jpeg({ quality }) // 设置JPEG质量
-      .toFile(outputFilePath);
-
-    console.log(`成功压缩图片: ${outputFilePath}`);
-    return true;
-  } catch (error) {
-    console.error('压缩图片失败:', error);
-    return false;
-  }
-};
-
-/**
  * 生成缩略图
  * @param {string} originalFilePath 原图路径
  * @param {string} thumbnailFilePath 缩略图保存路径
@@ -243,46 +217,24 @@ app.post('/api/upload', generateFilenameBase, upload.single('image'), async (req
     }
 
     const originalFile = req.file;
-    const originalFilePath = path.join(ORIGINAL_DIR, originalFile.filename);
+    const fileSize = originalFile.size;
+    const filename = originalFile.filename;
+    const originalFilePath = path.join(ORIGINAL_DIR, filename);
+    const thumbnailFilePath = path.join(THUMBNAILS_DIR, filename);
 
-    // 创建文件名（与原图同名但保存在thumbnails目录）
-    const processedFilename = originalFile.filename;
-    const processedFilePath = path.join(THUMBNAILS_DIR, processedFilename);
-
-    // 从req.body中获取原始文件名
-    const displayFileName = req.body.fileName || '未命名图片';
-
-    // 使用服务器默认值
-    const thumbnailQuality = DEFAULT_THUMBNAIL_QUALITY;
-
-    // 检查是否需要生成缩略图或仅压缩
-    const shouldGenerateThumbnail = req.body.generateThumbnail === 'true';
-
-    if (shouldGenerateThumbnail) {
-      // 使用服务器默认尺寸
-      // 生成缩略图
-      await generateThumbnail(
-        originalFilePath,
-        processedFilePath,
-        thumbnailQuality
-      );
-    } else {
-      // 只压缩图片，不改变尺寸
-      await compressImage(
-        originalFilePath,
-        processedFilePath,
-        thumbnailQuality
-      );
-    }
+    await generateThumbnail(
+      originalFilePath,
+      thumbnailFilePath,
+    );
 
     // 返回文件访问路径
     res.json({
       success: true,
       data: {
-        originalUrl: `/uploads/origin/${originalFile.filename}`,
-        thumbnailUrl: `/uploads/thumbnails/${processedFilename}`,
-        fileName: displayFileName,
-        fileSize: originalFile.size
+        originalUrl: `/uploads/origin/${filename}`,
+        thumbnailUrl: `/uploads/thumbnails/${filename}`,
+        fileSize: fileSize,
+        fileName: filename
       }
     });
   } catch (error) {
