@@ -19,6 +19,14 @@ interface Wallpaper {
   }
 }
 
+// 定义API返回的图片项类型
+interface GetImageApiItem {
+  _id: string
+  id?: string
+  origin: string
+  fileName?: string
+}
+
 // 分类列表
 const categories = [
   { value: 'all', label: '全部' },
@@ -46,24 +54,21 @@ const filteredWallpapers = computed(() => {
 const fetchWallpapers = async () => {
   try {
     isLoading.value = true
-    const response = await fetch('/api/images')
+    const response = await fetch('https://fc-mp-901c2eda-ac99-48e4-af67-19411b9d7eb7.next.bspapp.com/images/getImages')
     const result = await response.json()
-
-    if (result.success) {
-      // 临时模拟分类数据，实际项目中应该从后端获取
-      wallpapers.value = result.data.map((wallpaper: Wallpaper) => {
-        // 随机分配分类，实际项目中应该使用真实数据
-        const categories = ['nature', 'beauty', 'anime']
-        const randomIndex = Math.floor(Math.random() * categories.length)
-        return {
-          ...wallpaper,
-          category: categories[randomIndex]
-        }
-      })
-      // 获取所有壁纸的分辨率
+    if (result.code === 0) {
+      wallpapers.value = result.data.map((item: GetImageApiItem) => ({
+        id: item.id || item._id,
+        fileName: item.fileName || '壁纸',
+        originalUrl: item.origin,
+        thumbnailUrl: item.origin,
+        fileSize: 0,
+        uploadTime: '',
+        category: 'beauty',
+      }))
       loadResolutions()
     } else {
-      console.error('获取壁纸失败:', result.error)
+      console.error('获取壁纸失败:', result)
     }
   } catch (error) {
     console.error('获取壁纸列表失败:', error)
@@ -81,9 +86,7 @@ const handleCategoryChange = (value: TabValue) => {
 const loadResolutions = async () => {
   for (const wallpaper of wallpapers.value) {
     try {
-      // 使用原始图片链接获取分辨率
-      const imageUrl = `http://localhost:3000${wallpaper.originalUrl}`
-      const resolution = await getImageResolution(imageUrl)
+      const resolution = await getImageResolution(wallpaper.originalUrl)
       wallpaper.resolution = resolution
     } catch (error) {
       console.error(`获取壁纸 ${wallpaper.id} 分辨率失败:`, error)
@@ -143,7 +146,7 @@ const handleDownload = async () => {
       <div class="wallpapers-grid">
         <div class="wallpaper-card" v-for="wallpaper in filteredWallpapers" :key="wallpaper.id"
           @click="onOpenModal(wallpaper)">
-          <img :src="`http://localhost:3000${wallpaper.thumbnailUrl}`" :alt="wallpaper.fileName" />
+          <img :src="wallpaper.thumbnailUrl" :alt="wallpaper.fileName" />
           <div class="wallpaper-info">
             <span class="wallpaper-name">{{ wallpaper.fileName }}</span>
             <span class="wallpaper-resolution" v-if="wallpaper.resolution">
@@ -160,8 +163,7 @@ const handleDownload = async () => {
     <t-dialog :visible="dialogVisible" :header="currentWallpaper?.fileName" attach="body" @close="onCloseDialog"
       class="wallpaper-dialog" width="auto" top="5%">
       <div v-if="currentWallpaper" class="dialog-content">
-        <img :src="`http://localhost:3000${currentWallpaper.originalUrl}`" :alt="currentWallpaper.fileName"
-          class="dialog-image" />
+        <img :src="currentWallpaper.originalUrl" :alt="currentWallpaper.fileName" class="dialog-image" />
         <div class="dialog-image-info">
           <p>上传时间: {{ currentWallpaper.uploadTime }}</p>
           <p>文件大小: {{ Math.round(currentWallpaper.fileSize / 1024) }} KB</p>
