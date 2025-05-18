@@ -87,15 +87,12 @@ app.use('/uploads', express.static(UPLOADS_DIR));
 // 安全的文件名生成函数
 const generateSafeFilename = (originalName) => {
   try {
-    // 解码URL编码的文件名
-    const decodedName = decodeURIComponent(originalName);
 
     // 提取文件扩展名
-    const extname = path.extname(decodedName);
+    const extname = path.extname(originalName);
 
     // 生成安全的基本文件名（只保留字母、数字、下划线）
-    const sanitizedBasename = path.basename(decodedName, extname)
-      .replace(/[^a-zA-Z0-9_\u4e00-\u9fa5]/g, '_'); // 保留中文字符
+    const sanitizedBasename = path.basename(originalName, extname)
 
     // 不再限制文件名长度
 
@@ -165,33 +162,13 @@ const storage = multer.diskStorage({
     cb(null, ORIGINAL_DIR);
   },
   filename: (req, file, cb) => {
-    // 获取自定义文件名基础（如果存在）
-    const filenameBase = req.filenameBase;
+    // 解决中文名乱码的问题
+    file.originalname = Buffer.from(file.originalname, "latin1").toString("utf8");
+    // 生成新的安全文件名
+    const filename = generateSafeFilename(file.originalname);
+    cb(null, filename);
+  },
 
-    if (filenameBase) {
-      // 使用相同的文件名基础，确保原图和缩略图使用相同的时间戳和随机字符串
-      const extname = path.extname(file.originalname);
-      const sanitizedBasename = path.basename(file.originalname, extname)
-        .replace(/[^a-zA-Z0-9_\u4e00-\u9fa5]/g, '_');
-
-      // 创建完整文件名
-      const fullFilename = `${sanitizedBasename}_${filenameBase}${extname}`;
-      // 大多数文件系统的文件名长度限制
-      const maxFilenameLength = 240;
-
-      // 如果文件名超长，使用哈希替代
-      if (Buffer.from(fullFilename).length > maxFilenameLength) {
-        const hash = crypto.createHash('md5').update(sanitizedBasename).digest('hex').substring(0, 10);
-        cb(null, `image_${hash}_${filenameBase}${extname}`);
-      } else {
-        cb(null, fullFilename);
-      }
-    } else {
-      // 生成新的安全文件名
-      const filename = generateSafeFilename(file.originalname);
-      cb(null, filename);
-    }
-  }
 });
 
 const upload = multer({
@@ -200,17 +177,8 @@ const upload = multer({
   limits: { fileSize: MAX_FILE_SIZE * 1024 * 1024 }
 });
 
-// 生成文件名基础的中间件
-const generateFilenameBase = (req, res, next) => {
-  // 生成时间戳和随机字符串作为文件名基础
-  const timestamp = Date.now();
-  const randomString = Math.random().toString(36).substring(2, 8);
-  req.filenameBase = `${timestamp}_${randomString}`;
-  next();
-};
-
 // 处理图片上传
-app.post('/api/upload', generateFilenameBase, upload.single('image'), async (req, res) => {
+app.post('/api/upload', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: '未接收到文件' });

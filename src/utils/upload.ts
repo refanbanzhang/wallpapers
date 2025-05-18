@@ -24,7 +24,6 @@ export const uploadImage = async ({
     // 创建FormData
     const formData = new FormData()
     formData.append('image', file)
-    formData.append('fileName', file.name) // 原始文件名用于显示
 
     // 添加是否生成缩略图的标记
     formData.append('generateThumbnail', generateThumbnail.toString())
