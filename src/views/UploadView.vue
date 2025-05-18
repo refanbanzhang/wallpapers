@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { MessagePlugin, DialogPlugin, Loading } from 'tdesign-vue-next'
 import ImageUpload from '@/components/ImageUpload.vue'
 import { uploadImage, getUploadedImages, deleteImage, formatFileSize, deleteMultipleImages } from '@/utils/upload'
+import { downloadImage } from '@/utils/download'
 import { MAX_FILE_SIZE, DEFAULT_THUMBNAIL_WIDTH, DEFAULT_THUMBNAIL_HEIGHT, DEFAULT_THUMBNAIL_QUALITY } from '@/constants/sharedConstants'
 
 interface ServerImage {
@@ -211,6 +212,22 @@ const handleBatchDelete = () => {
     },
   })
 }
+
+// 下载原图
+const handleDownloadOriginal = (image: UploadedImage) => {
+  downloadImage({
+    url: image.originalUrl,
+    filename: image.fileName
+  })
+}
+
+// 下载缩略图
+const handleDownloadThumbnail = (image: UploadedImage) => {
+  downloadImage({
+    url: image.thumbnailUrl,
+    filename: `缩略图_${image.fileName}`
+  })
+}
 </script>
 
 <template>
@@ -269,12 +286,12 @@ const handleBatchDelete = () => {
             </div>
           </div>
           <div class="image-actions">
-            <a :href="image.originalUrl" :download="image.fileName" class="btn btn-primary">
+            <button class="btn btn-primary" @click="handleDownloadOriginal(image)">
               下载原图
-            </a>
-            <a :href="image.thumbnailUrl" :download="`缩略图_${image.fileName}`" class="btn btn-secondary">
+            </button>
+            <button class="btn btn-secondary" @click="handleDownloadThumbnail(image)">
               下载缩略图
-            </a>
+            </button>
             <button class="btn btn-danger" @click="handleDeleteImage(image.id)">
               删除
             </button>
