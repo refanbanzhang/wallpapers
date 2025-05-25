@@ -22,9 +22,9 @@ interface Wallpaper {
 interface GetImageApiItem {
   _id: string
   id?: string
-  origin: string
-  thumbnail: string
   fileName?: string
+  originalUrl: string
+  thumbnailUrl: string
 }
 
 // 分类列表
