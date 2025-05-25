@@ -10,7 +10,6 @@ interface Wallpaper {
   fileName: string
   originalUrl: string
   thumbnailUrl: string
-  fileSize: number
   uploadTime: string
   category?: string
   resolution?: {
@@ -24,6 +23,7 @@ interface GetImageApiItem {
   _id: string
   id?: string
   origin: string
+  thumbnail: string
   fileName?: string
 }
 
