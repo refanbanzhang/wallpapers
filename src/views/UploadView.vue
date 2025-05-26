@@ -2,10 +2,10 @@
 import { ref, onMounted, computed } from 'vue'
 import { MessagePlugin, DialogPlugin, Loading } from 'tdesign-vue-next'
 import ImageUpload from '@/components/ImageUpload.vue'
-import { uploadImage, deleteImage, formatFileSize, deleteMultipleImages } from '@/utils/upload'
+import { deleteImage, formatFileSize, deleteMultipleImages } from '@/utils/upload'
 import { downloadImage } from '@/utils/download'
 import { MAX_FILE_SIZE, DEFAULT_THUMBNAIL_WIDTH, DEFAULT_THUMBNAIL_HEIGHT, DEFAULT_THUMBNAIL_QUALITY } from '@/constants/sharedConstants'
-import { getImages } from '@/api/index'
+import { getImages, uploadImage } from '@/api/index'
 
 interface ServerImage {
   id: string
@@ -28,8 +28,6 @@ interface UploadedImage {
 // 已上传图片列表
 const uploadedImages = ref<UploadedImage[]>([])
 const loading = ref(false)
-// 是否只进行质量压缩，不生成缩略图（不改变图片尺寸）
-const compressOnlyQuality = ref(true)
 
 // 选中的图片IDs
 const selectedImageIds = ref<string[]>([])
@@ -101,10 +99,7 @@ const handleUploadSuccess = async (files: File[]) => {
 
     // 批量上传到服务器
     const uploadPromises = files.map(file =>
-      uploadImage({
-        file,
-        generateThumbnail: !compressOnlyQuality.value // 根据选项决定是否生成缩略图
-      })
+      uploadImage(file)
     )
 
     await Promise.all(uploadPromises)
