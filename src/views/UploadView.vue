@@ -2,9 +2,10 @@
 import { ref, onMounted, computed } from 'vue'
 import { MessagePlugin, DialogPlugin, Loading } from 'tdesign-vue-next'
 import ImageUpload from '@/components/ImageUpload.vue'
-import { uploadImage, getUploadedImages, deleteImage, formatFileSize, deleteMultipleImages } from '@/utils/upload'
+import { uploadImage, deleteImage, formatFileSize, deleteMultipleImages } from '@/utils/upload'
 import { downloadImage } from '@/utils/download'
 import { MAX_FILE_SIZE, DEFAULT_THUMBNAIL_WIDTH, DEFAULT_THUMBNAIL_HEIGHT, DEFAULT_THUMBNAIL_QUALITY } from '@/constants/sharedConstants'
+import { getImages } from '@/api/index'
 
 interface ServerImage {
   id: string
@@ -73,7 +74,7 @@ const toggleSelectAll = () => {
 const fetchUploadedImages = async () => {
   try {
     loading.value = true
-    const images = (await getUploadedImages()) as ServerImage[]
+    const images = (await getImages()) as ServerImage[]
     uploadedImages.value = images.map((image) => ({
       ...image,
       fileSize: formatFileSize(image.fileSize),

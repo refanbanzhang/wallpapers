@@ -4,6 +4,7 @@ import { Dialog as TDialog, Button as TButton, Loading as TLoading, Tabs as TTab
 import type { TabValue } from 'tdesign-vue-next'
 import { downloadWallpaper } from '@/utils/download'
 import { getImageResolution } from '@/utils/image'
+import { getImages } from '@/api/index'
 
 interface Wallpaper {
   id: string
@@ -57,17 +58,12 @@ const filteredWallpapers = computed(() => {
 const fetchWallpapers = async () => {
   try {
     isLoading.value = true
-    const response = await fetch('https://fc-mp-901c2eda-ac99-48e4-af67-19411b9d7eb7.next.bspapp.com/image/getImages')
-    const result = await response.json()
-    if (result.code === 0) {
-      wallpapers.value = result.data.map((item: GetImageApiItem) => ({
-        ...item,
-        id: item.id || item._id,
-      }))
-      loadResolutions()
-    } else {
-      console.error('获取壁纸失败:', result)
-    }
+    const data = await getImages()
+    wallpapers.value = data.map((item: GetImageApiItem) => ({
+      ...item,
+      id: item.id || item._id,
+    }))
+    loadResolutions()
   } catch (error) {
     console.error('获取壁纸列表失败:', error)
   } finally {

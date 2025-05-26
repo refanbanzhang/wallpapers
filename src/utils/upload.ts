@@ -48,23 +48,6 @@ export const uploadImage = async ({
 }
 
 /**
- * 获取已上传的图片列表
- */
-export const getUploadedImages = async () => {
-  try {
-    const response = await fetch('/api/images')
-    if (!response.ok) {
-      throw new Error('获取图片列表失败')
-    }
-    const result = await response.json()
-    return result.data
-  } catch (error) {
-    console.error('获取图片列表失败:', error)
-    throw error
-  }
-}
-
-/**
  * 删除图片
  * @param id 图片ID
  */
