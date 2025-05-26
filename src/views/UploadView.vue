@@ -2,10 +2,10 @@
 import { ref, onMounted, computed } from 'vue'
 import { MessagePlugin, DialogPlugin, Loading } from 'tdesign-vue-next'
 import ImageUpload from '@/components/ImageUpload.vue'
-import { deleteImage, formatFileSize, deleteMultipleImages } from '@/utils/upload'
+import { formatFileSize, deleteMultipleImages } from '@/utils/upload'
 import { downloadImage } from '@/utils/download'
 import { MAX_FILE_SIZE, DEFAULT_THUMBNAIL_WIDTH, DEFAULT_THUMBNAIL_HEIGHT, DEFAULT_THUMBNAIL_QUALITY } from '@/constants/sharedConstants'
-import { getImages, uploadImage } from '@/api/index'
+import { getImages, uploadImage, removeImage } from '@/api/index'
 
 interface ServerImage {
   id: string
@@ -130,7 +130,7 @@ const handleDeleteImage = (id: string) => {
     cancelBtn: '取消',
     onConfirm: async () => {
       try {
-        await deleteImage(id)
+        await removeImage(id)
         await fetchUploadedImages()
         MessagePlugin.success('删除成功')
       } catch {
