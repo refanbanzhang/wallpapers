@@ -241,25 +241,57 @@ const handleDrop = async (e: DragEvent) => {
 
 <template>
   <div class="image-upload-container">
-    <input type="file" ref="fileInput" accept="image/*" class="file-input" @change="handleFileChange"
-      :multiple="multiple" />
+    <input
+      type="file"
+      ref="fileInput"
+      accept="image/*"
+      class="file-input"
+      @change="handleFileChange"
+      :multiple="multiple"
+    />
 
-    <div class="upload-area" :class="{ 'is-dragging': isDragging }" @click="openFileSelector"
-      @dragenter="handleDragEnter" @dragover="handleDragOver" @dragleave="handleDragLeave" @drop="handleDrop">
-      <div v-if="loading" class="loading-container">
+    <div
+      class="upload-area"
+      :class="{ 'is-dragging': isDragging }"
+      @click="openFileSelector"
+      @dragenter="handleDragEnter"
+      @dragover="handleDragOver"
+      @dragleave="handleDragLeave"
+      @drop="handleDrop"
+    >
+      <div
+        v-if="loading"
+        class="loading-container"
+      >
         <Loading size="medium" />
         <span class="loading-text">处理中...</span>
-        <div v-if="isUploading" class="progress-container">
-          <Progress :percentage="uploadProgress" :label="false" />
+        <div
+          v-if="isUploading"
+          class="progress-container"
+        >
+          <Progress
+            :percentage="uploadProgress"
+            :label="false"
+          />
           <span class="progress-text">{{ uploadCompleted }}/{{ uploadTotal }} 已处理</span>
         </div>
       </div>
 
-      <div v-else class="upload-placeholder">
+      <div
+        v-else
+        class="upload-placeholder"
+      >
         <div class="upload-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
-            <path fill="currentColor"
-              d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-8h-5zM5 19l3-4l2 3l3-4l4 5H5z" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill="currentColor"
+              d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-8h-5zM5 19l3-4l2 3l3-4l4 5H5z"
+            />
           </svg>
         </div>
         <span class="upload-text">
@@ -267,11 +299,21 @@ const handleDrop = async (e: DragEvent) => {
         </span>
         <span class="upload-hint">缩略图将在服务器自动生成，文件大小不超过{{ maxFileSize }}MB</span>
 
-        <div v-if="isDragging" class="drag-overlay">
+        <div
+          v-if="isDragging"
+          class="drag-overlay"
+        >
           <div class="drag-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24">
-              <path fill="currentColor"
-                d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5l5 5h-3z" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5c0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5l5 5h-3z"
+              />
             </svg>
           </div>
           <span class="drag-text">释放鼠标上传文件</span>

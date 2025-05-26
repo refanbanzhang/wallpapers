@@ -237,45 +237,83 @@ const handleDownloadThumbnail = (image: UploadedImage) => {
     <p class="page-description">上传图片会自动生成缩略图，支持多种图片格式</p>
 
     <div class="card upload-section">
-      <ImageUpload multiple :max-file-size="MAX_FILE_SIZE" :thumbnail-width="DEFAULT_THUMBNAIL_WIDTH"
-        :thumbnail-height="DEFAULT_THUMBNAIL_HEIGHT" :thumbnail-quality="DEFAULT_THUMBNAIL_QUALITY"
-        @upload-success="handleUploadSuccess" @upload-success-multiple="handleUploadSuccessMultiple"
-        @upload-error="handleUploadError" />
+      <ImageUpload
+        multiple
+        :max-file-size="MAX_FILE_SIZE"
+        :thumbnail-width="DEFAULT_THUMBNAIL_WIDTH"
+        :thumbnail-height="DEFAULT_THUMBNAIL_HEIGHT"
+        :thumbnail-quality="DEFAULT_THUMBNAIL_QUALITY"
+        @upload-success="handleUploadSuccess"
+        @upload-success-multiple="handleUploadSuccessMultiple"
+        @upload-error="handleUploadError"
+      />
     </div>
 
-    <div v-if="loading" class="loading-section">
+    <div
+      v-if="loading"
+      class="loading-section"
+    >
       <div class="loading-container">
         <Loading size="medium" />
         <span class="loading-text">加载中...</span>
       </div>
     </div>
 
-    <div class="uploaded-list" v-else-if="uploadedImages.length > 0">
+    <div
+      class="uploaded-list"
+      v-else-if="uploadedImages.length > 0"
+    >
       <div class="section-header">
         <h2 class="section-title">已上传图片</h2>
         <div class="section-actions">
-          <button class="btn" :class="{ 'btn-primary': isSelectionMode, 'btn-secondary': !isSelectionMode }"
-            @click="toggleSelectionMode">
+          <button
+            class="btn"
+            :class="{ 'btn-primary': isSelectionMode, 'btn-secondary': !isSelectionMode }"
+            @click="toggleSelectionMode"
+          >
             {{ isSelectionMode ? '退出选择' : '选择图片' }}
           </button>
-          <button v-if="isSelectionMode" class="btn btn-secondary" @click="toggleSelectAll">
+          <button
+            v-if="isSelectionMode"
+            class="btn btn-secondary"
+            @click="toggleSelectAll"
+          >
             {{ isAllSelected ? '取消全选' : '全选' }}
           </button>
-          <button v-if="isSelectionMode" class="btn btn-danger" @click="handleBatchDelete"
-            :disabled="selectedImageIds.length === 0">
+          <button
+            v-if="isSelectionMode"
+            class="btn btn-danger"
+            @click="handleBatchDelete"
+            :disabled="selectedImageIds.length === 0"
+          >
             批量删除 ({{ selectedImageIds.length }})
           </button>
         </div>
       </div>
 
       <div class="list-container">
-        <div v-for="image in uploadedImages" :key="image.id" class="image-item card"
-          :class="{ 'image-selected': selectedImageIds.includes(image.id) }">
+        <div
+          v-for="image in uploadedImages"
+          :key="image.id"
+          class="image-item card"
+          :class="{ 'image-selected': selectedImageIds.includes(image.id) }"
+        >
           <div class="thumbnail-container">
-            <img :src="image.thumbnailUrl" alt="缩略图" class="thumbnail" />
-            <div v-if="isSelectionMode" class="selection-overlay" @click="toggleSelection(image.id)">
+            <img
+              :src="image.thumbnailUrl"
+              alt="缩略图"
+              class="thumbnail"
+            />
+            <div
+              v-if="isSelectionMode"
+              class="selection-overlay"
+              @click="toggleSelection(image.id)"
+            >
               <div class="checkbox-container">
-                <span class="checkbox" :class="{ 'checked': selectedImageIds.includes(image.id) }"></span>
+                <span
+                  class="checkbox"
+                  :class="{ 'checked': selectedImageIds.includes(image.id) }"
+                ></span>
               </div>
             </div>
           </div>
@@ -287,13 +325,22 @@ const handleDownloadThumbnail = (image: UploadedImage) => {
             </div>
           </div>
           <div class="image-actions">
-            <button class="btn btn-primary" @click="handleDownloadOriginal(image)">
+            <button
+              class="btn btn-primary"
+              @click="handleDownloadOriginal(image)"
+            >
               下载原图
             </button>
-            <button class="btn btn-secondary" @click="handleDownloadThumbnail(image)">
+            <button
+              class="btn btn-secondary"
+              @click="handleDownloadThumbnail(image)"
+            >
               下载缩略图
             </button>
-            <button class="btn btn-danger" @click="handleDeleteImage(image.id)">
+            <button
+              class="btn btn-danger"
+              @click="handleDeleteImage(image.id)"
+            >
               删除
             </button>
           </div>
@@ -301,11 +348,21 @@ const handleDownloadThumbnail = (image: UploadedImage) => {
       </div>
     </div>
 
-    <div v-else class="empty-state">
+    <div
+      v-else
+      class="empty-state"
+    >
       <div class="empty-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24">
-          <path fill="currentColor"
-            d="M5 21q-.825 0-1.413-.588T3 19V5q0-.825.588-1.413T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.588 1.413T19 21H5Zm0-2h14V5H5v14Zm0 0V5v14Zm7-7q1.25 0 2.125-.875T15 9q0-1.25-.875-2.125T12 6q-1.25 0-2.125.875T9 9q0 1.25.875 2.125T12 12Zm-6 6h12v-2q0-.825-.425-1.213T16 14.275q-1 .85-2.288 1.288T11.975 16q-1.45 0-2.75-.438T7 14.275q-.55.125-1 .5T5.025 16L5 18h1Z" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="64"
+          height="64"
+          viewBox="0 0 24 24"
+        >
+          <path
+            fill="currentColor"
+            d="M5 21q-.825 0-1.413-.588T3 19V5q0-.825.588-1.413T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.588 1.413T19 21H5Zm0-2h14V5H5v14Zm0 0V5v14Zm7-7q1.25 0 2.125-.875T15 9q0-1.25-.875-2.125T12 6q-1.25 0-2.125.875T9 9q0 1.25.875 2.125T12 12Zm-6 6h12v-2q0-.825-.425-1.213T16 14.275q-1 .85-2.288 1.288T11.975 16q-1.45 0-2.75-.438T7 14.275q-.55.125-1 .5T5.025 16L5 18h1Z"
+          />
         </svg>
       </div>
       <div class="empty-text">暂无上传图片</div>

@@ -124,40 +124,81 @@ const handleDownload = async () => {
   <div class="page-container">
     <h1 class="page-title">壁纸库</h1>
 
-    <div v-if="isLoading" class="loading-container">
+    <div
+      v-if="isLoading"
+      class="loading-container"
+    >
       <t-loading />
     </div>
 
-    <div v-else-if="wallpapers.length === 0" class="empty-state">
+    <div
+      v-else-if="wallpapers.length === 0"
+      class="empty-state"
+    >
       没有找到壁纸，请上传一些壁纸
     </div>
 
     <div v-else>
-      <t-tabs v-model="activeCategory" @change="handleCategoryChange">
-        <t-tab-panel v-for="item in categories" :key="item.value" :value="item.value" :label="item.label" />
+      <t-tabs
+        v-model="activeCategory"
+        @change="handleCategoryChange"
+      >
+        <t-tab-panel
+          v-for="item in categories"
+          :key="item.value"
+          :value="item.value"
+          :label="item.label"
+        />
       </t-tabs>
 
       <div class="wallpapers-grid">
-        <div class="wallpaper-card" v-for="wallpaper in filteredWallpapers" :key="wallpaper.id"
-          @click="onOpenModal(wallpaper)">
-          <img :src="wallpaper.thumbnailUrl" :alt="wallpaper.fileName" />
+        <div
+          class="wallpaper-card"
+          v-for="wallpaper in filteredWallpapers"
+          :key="wallpaper.id"
+          @click="onOpenModal(wallpaper)"
+        >
+          <img
+            :src="wallpaper.thumbnailUrl"
+            :alt="wallpaper.fileName"
+          />
           <div class="wallpaper-info">
             <span class="wallpaper-name">{{ wallpaper.fileName }}</span>
-            <span class="wallpaper-resolution" v-if="wallpaper.resolution">
+            <span
+              class="wallpaper-resolution"
+              v-if="wallpaper.resolution"
+            >
               {{ wallpaper.resolution.width }} × {{ wallpaper.resolution.height }}
             </span>
           </div>
-          <div class="wallpaper-category" :class="wallpaper.category">
+          <div
+            class="wallpaper-category"
+            :class="wallpaper.category"
+          >
             {{categories.find(cat => cat.value === wallpaper.category)?.label}}
           </div>
         </div>
       </div>
     </div>
 
-    <t-dialog :visible="dialogVisible" :header="currentWallpaper?.fileName" attach="body" @close="onCloseDialog"
-      class="wallpaper-dialog" width="auto" top="5%">
-      <div v-if="currentWallpaper" class="dialog-content">
-        <img :src="currentWallpaper.originalUrl" :alt="currentWallpaper.fileName" class="dialog-image" />
+    <t-dialog
+      :visible="dialogVisible"
+      :header="currentWallpaper?.fileName"
+      attach="body"
+      @close="onCloseDialog"
+      class="wallpaper-dialog"
+      width="auto"
+      top="5%"
+    >
+      <div
+        v-if="currentWallpaper"
+        class="dialog-content"
+      >
+        <img
+          :src="currentWallpaper.originalUrl"
+          :alt="currentWallpaper.fileName"
+          class="dialog-image"
+        />
         <div class="dialog-image-info">
           <p>上传时间: {{ currentWallpaper.uploadTime }}</p>
           <p>文件大小: {{ Math.round(currentWallpaper.fileSize / 1024) }} KB</p>
@@ -168,8 +209,15 @@ const handleDownload = async () => {
       </div>
       <template #footer>
         <div class="dialog-footer">
-          <t-button theme="default" @click="onCloseDialog">关闭</t-button>
-          <t-button theme="primary" :loading="loading" @click="handleDownload">下载</t-button>
+          <t-button
+            theme="default"
+            @click="onCloseDialog"
+          >关闭</t-button>
+          <t-button
+            theme="primary"
+            :loading="loading"
+            @click="handleDownload"
+          >下载</t-button>
         </div>
       </template>
     </t-dialog>
