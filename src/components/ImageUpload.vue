@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Loading, MessagePlugin, Progress } from 'tdesign-vue-next'
+import { MessagePlugin } from 'tdesign-vue-next'
 import { MAX_FILE_SIZE } from '@/constants/sharedConstants'
 
 const props = defineProps<{
@@ -16,10 +16,6 @@ const emit = defineEmits(['upload-success'])
 const fileInput = ref<HTMLInputElement | null>(null)
 const loading = ref(false)
 const isDragging = ref(false)
-const uploadProgress = ref(0)
-const isUploading = ref(false)
-const uploadTotal = ref(0)
-const uploadCompleted = ref(0)
 
 // 设置默认值
 const maxFileSize = props.maxFileSize || MAX_FILE_SIZE
@@ -68,22 +64,12 @@ const validateFile = (file: File): {
 const validateFilesWrap = async (fileList: FileList) => {
   try {
     loading.value = true
-    isUploading.value = true
-    uploadProgress.value = 0
 
     const results: Array<File> = []
     const errors: Array<string> = []
-    const totalFiles = fileList.length
-    uploadTotal.value = totalFiles
-    uploadCompleted.value = 0
 
     const processResults = Array.from(fileList).map((file) => {
-      const result = validateFile(file)
-
-      uploadCompleted.value++
-      uploadProgress.value = Math.round((uploadCompleted.value / totalFiles) * 100)
-
-      return result
+      return validateFile(file)
     })
 
     processResults.forEach((result) => {
@@ -108,10 +94,9 @@ const validateFilesWrap = async (fileList: FileList) => {
   } catch (error) {
     console.error('批量处理文件失败:', error)
     MessagePlugin.error('批量处理文件失败')
-
-    loading.value = false
-    isUploading.value = false
     resetFileInput()
+  } finally {
+    loading.value = false
   }
 }
 
@@ -193,21 +178,7 @@ const handleDrop = async (e: DragEvent) => {
       <div
         v-if="loading"
         class="loading-container"
-      >
-        <Loading size="medium" />
-        <span class="loading-text">处理中...</span>
-        <div
-          v-if="isUploading"
-          class="progress-container"
-        >
-          <Progress
-            :percentage="uploadProgress"
-            :label="false"
-          />
-          <span class="progress-text">{{ uploadCompleted }}/{{ uploadTotal }} 已校验</span>
-        </div>
-      </div>
-
+      />
       <div
         v-else
         class="upload-placeholder"

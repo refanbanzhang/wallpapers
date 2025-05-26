@@ -30,10 +30,13 @@ export const uploadImage = async (file) => {
 
   const response = await fetch(`${host}/image/uploadImage`, {
     method: 'POST',
-    body: {
+    body: JSON.stringify({
       fileName: file.name,
       fileContent: base64,
-    },
+    }),
+    headers: {
+      'Content-Type': 'application/json'
+    }
   })
   const data = await response.json()
   return data.data
