@@ -4,11 +4,11 @@ import { Loading, MessagePlugin, Progress } from 'tdesign-vue-next'
 import { MAX_FILE_SIZE } from '@/constants/sharedConstants'
 
 const props = defineProps<{
-  maxFileSize?: number // 最大文件大小，单位MB
-  thumbnailWidth?: number // 缩略图宽度（将由后端使用）
-  thumbnailHeight?: number // 缩略图高度（将由后端使用）
-  thumbnailQuality?: number // 缩略图质量（将由后端使用）
-  multiple?: boolean // 是否支持多文件上传
+  maxFileSize?: number
+  thumbnailWidth?: number
+  thumbnailHeight?: number
+  thumbnailQuality?: number
+  multiple?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -36,9 +36,9 @@ const openFileSelector = () => {
 }
 
 /**
- * 处理文件的通用方法
+ * 校验文件对象
  */
-const processFile = async (
+const validateFile = async (
   file: File,
 ): Promise<{
   success: boolean
@@ -69,45 +69,9 @@ const processFile = async (
 }
 
 /**
- * 处理单个文件上传并更新UI
+ * 遍历校验文件对象
  */
-const processFileAndUpdateUI = async (file: File) => {
-  try {
-    loading.value = true
-    isUploading.value = true
-    uploadProgress.value = 0
-    uploadTotal.value = 1
-    uploadCompleted.value = 0
-
-    const result = await processFile(file)
-
-    if (result.success && result.result) {
-      // 更新进度
-      uploadProgress.value = 100
-      uploadCompleted.value = 1
-
-      // 触发上传成功事件，让父组件处理上传到服务器
-      emit('upload-success', result.result)
-    } else {
-      // 显示错误
-      MessagePlugin.error(result.error || '文件处理失败')
-      emit('upload-error', new Error(result.error || '文件处理失败'))
-    }
-  } catch (error) {
-    console.error('处理文件失败:', error)
-    emit('upload-error', error instanceof Error ? error : new Error('处理文件失败'))
-    MessagePlugin.error('处理文件失败')
-  } finally {
-    loading.value = false
-    isUploading.value = false
-    resetFileInput()
-  }
-}
-
-/**
- * 处理多个文件上传
- */
-const processMultipleFiles = async (fileList: FileList) => {
+const validateFilesWrap = async (fileList: FileList) => {
   try {
     loading.value = true
     isUploading.value = true
@@ -121,7 +85,7 @@ const processMultipleFiles = async (fileList: FileList) => {
 
     // 使用Promise.all进行并行处理，提高效率
     const processPromises = Array.from(fileList).map(async (file) => {
-      const result = await processFile(file)
+      const result = await validateFile(file)
 
       // 更新进度
       uploadCompleted.value++
@@ -141,18 +105,18 @@ const processMultipleFiles = async (fileList: FileList) => {
       }
     })
 
-    // 显示处理结果信息
+    // 显示校验结果信息
     if (results.length === totalFiles) {
-      MessagePlugin.success(`成功上传 ${results.length} 张图片`)
+      MessagePlugin.success(`校验成功 ${results.length} 张图片`)
     } else if (results.length > 0) {
-      MessagePlugin.warning(`成功上传 ${results.length}/${totalFiles} 张图片`)
+      MessagePlugin.warning(`校验成功 ${results.length}/${totalFiles} 张图片`)
     } else {
-      MessagePlugin.error('没有成功上传的图片')
+      MessagePlugin.error('没有校验成功的图片')
     }
 
     // 显示详细错误信息
     if (errors.length > 0) {
-      console.error('部分文件上传失败:', errors)
+      console.error('部分文件校验失败:', errors)
     }
 
     // 触发事件
@@ -160,7 +124,7 @@ const processMultipleFiles = async (fileList: FileList) => {
       // 触发多文件上传成功事件
       emit('upload-success-multiple', results)
     } else {
-      emit('upload-error', new Error('没有成功上传的文件'))
+      emit('upload-error', new Error('没有校验成功的文件'))
     }
   } catch (error) {
     console.error('批量处理文件失败:', error)
@@ -184,11 +148,7 @@ const handleFileChange = async (event: Event) => {
     return
   }
 
-  if (props.multiple && files.length > 1) {
-    await processMultipleFiles(files)
-  } else {
-    await processFileAndUpdateUI(files[0])
-  }
+  await validateFilesWrap(files)
 }
 
 /**
@@ -200,9 +160,6 @@ const resetFileInput = () => {
   }
 }
 
-/**
- * 处理拖拽相关事件
- */
 const handleDragEnter = (e: DragEvent) => {
   e.preventDefault()
   e.stopPropagation()
@@ -231,11 +188,7 @@ const handleDrop = async (e: DragEvent) => {
     return
   }
 
-  if (props.multiple && files.length > 1) {
-    await processMultipleFiles(files)
-  } else {
-    await processFileAndUpdateUI(files[0])
-  }
+  await validateFilesWrap(files)
 }
 </script>
 
