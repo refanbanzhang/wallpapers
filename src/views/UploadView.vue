@@ -93,34 +93,9 @@ onMounted(() => {
 })
 
 /**
- * 处理上传成功事件
- */
-const handleUploadSuccess = async (file: File) => {
-  try {
-    loading.value = true
-
-    // 上传到服务器，传递缩略图相关参数
-    await uploadImage({
-      file,
-      generateThumbnail: !compressOnlyQuality.value // 根据选项决定是否生成缩略图
-    })
-
-    // 获取最新的图片列表
-    await fetchUploadedImages()
-
-    MessagePlugin.success('上传成功')
-  } catch (error) {
-    console.error('上传失败:', error)
-    MessagePlugin.error(`上传失败: ${error instanceof Error ? error.message : '未知错误'}`)
-  } finally {
-    loading.value = false
-  }
-}
-
-/**
  * 处理批量上传成功事件
  */
-const handleUploadSuccessMultiple = async (files: File[]) => {
+const handleUploadSuccess = async (files: File[]) => {
   try {
     loading.value = true
 
@@ -144,14 +119,6 @@ const handleUploadSuccessMultiple = async (files: File[]) => {
   } finally {
     loading.value = false
   }
-}
-
-/**
- * 处理上传错误事件
- */
-const handleUploadError = (error: Error) => {
-  console.error('上传失败:', error)
-  MessagePlugin.error(`上传失败: ${error.message}`)
 }
 
 /**
@@ -244,8 +211,6 @@ const handleDownloadThumbnail = (image: UploadedImage) => {
         :thumbnail-height="DEFAULT_THUMBNAIL_HEIGHT"
         :thumbnail-quality="DEFAULT_THUMBNAIL_QUALITY"
         @upload-success="handleUploadSuccess"
-        @upload-success-multiple="handleUploadSuccessMultiple"
-        @upload-error="handleUploadError"
       />
     </div>
 

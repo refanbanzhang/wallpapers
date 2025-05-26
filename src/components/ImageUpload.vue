@@ -11,11 +11,7 @@ const props = defineProps<{
   multiple?: boolean
 }>()
 
-const emit = defineEmits<{
-  (e: 'upload-success', file: File): void
-  (e: 'upload-success-multiple', files: File[]): void
-  (e: 'upload-error', error: Error): void
-}>()
+const emit = defineEmits(['upload-success'])
 
 const fileInput = ref<HTMLInputElement | null>(null)
 const loading = ref(false)
@@ -38,13 +34,11 @@ const openFileSelector = () => {
 /**
  * 校验文件对象
  */
-const validateFile = async (
-  file: File,
-): Promise<{
+const validateFile = (file: File): {
   success: boolean
   result?: File
   error?: string
-}> => {
+} => {
   // 检查文件大小
   if (file.size > maxFileSize * 1024 * 1024) {
     return {
@@ -83,20 +77,15 @@ const validateFilesWrap = async (fileList: FileList) => {
     uploadTotal.value = totalFiles
     uploadCompleted.value = 0
 
-    // 使用Promise.all进行并行处理，提高效率
-    const processPromises = Array.from(fileList).map(async (file) => {
-      const result = await validateFile(file)
+    const processResults = Array.from(fileList).map((file) => {
+      const result = validateFile(file)
 
-      // 更新进度
       uploadCompleted.value++
       uploadProgress.value = Math.round((uploadCompleted.value / totalFiles) * 100)
 
       return result
     })
 
-    const processResults = await Promise.all(processPromises)
-
-    // 收集结果
     processResults.forEach((result) => {
       if (result.success && result.result) {
         results.push(result.result)
@@ -105,30 +94,19 @@ const validateFilesWrap = async (fileList: FileList) => {
       }
     })
 
-    // 显示校验结果信息
-    if (results.length === totalFiles) {
-      MessagePlugin.success(`校验成功 ${results.length} 张图片`)
-    } else if (results.length > 0) {
-      MessagePlugin.warning(`校验成功 ${results.length}/${totalFiles} 张图片`)
-    } else {
-      MessagePlugin.error('没有校验成功的图片')
-    }
-
     // 显示详细错误信息
     if (errors.length > 0) {
       console.error('部分文件校验失败:', errors)
+      MessagePlugin.error('部分文件校验失败')
+      return
     }
 
     // 触发事件
     if (results.length > 0) {
-      // 触发多文件上传成功事件
-      emit('upload-success-multiple', results)
-    } else {
-      emit('upload-error', new Error('没有校验成功的文件'))
+      emit('upload-success', results)
     }
   } catch (error) {
     console.error('批量处理文件失败:', error)
-    emit('upload-error', error instanceof Error ? error : new Error('批量处理文件失败'))
     MessagePlugin.error('批量处理文件失败')
 
     loading.value = false
@@ -226,7 +204,7 @@ const handleDrop = async (e: DragEvent) => {
             :percentage="uploadProgress"
             :label="false"
           />
-          <span class="progress-text">{{ uploadCompleted }}/{{ uploadTotal }} 已处理</span>
+          <span class="progress-text">{{ uploadCompleted }}/{{ uploadTotal }} 已校验</span>
         </div>
       </div>
 
