@@ -11,6 +11,7 @@ interface Wallpaper {
   originalUrl: string
   thumbnailUrl: string
   uploadTime: string
+  fileSize: number
   category?: string
   resolution?: {
     width: number
@@ -25,6 +26,8 @@ interface GetImageApiItem {
   fileName?: string
   originalUrl: string
   thumbnailUrl: string
+  uploadTime: string
+  fileSize: number
 }
 
 // 分类列表
@@ -54,17 +57,12 @@ const filteredWallpapers = computed(() => {
 const fetchWallpapers = async () => {
   try {
     isLoading.value = true
-    const response = await fetch('https://fc-mp-901c2eda-ac99-48e4-af67-19411b9d7eb7.next.bspapp.com/images/getImages')
+    const response = await fetch('https://fc-mp-901c2eda-ac99-48e4-af67-19411b9d7eb7.next.bspapp.com/image/getImages')
     const result = await response.json()
     if (result.code === 0) {
       wallpapers.value = result.data.map((item: GetImageApiItem) => ({
+        ...item,
         id: item.id || item._id,
-        fileName: item.fileName || '壁纸',
-        originalUrl: item.origin,
-        thumbnailUrl: item.origin,
-        fileSize: 0,
-        uploadTime: '',
-        category: 'beauty',
       }))
       loadResolutions()
     } else {
