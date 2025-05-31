@@ -1,11 +1,11 @@
-const host = 'https://fc-mp-901c2eda-ac99-48e4-af67-19411b9d7eb7.next.bspapp.com'
+const host = 'http://localhost:3000'
 
 /**
  * 获取图片列表
  * @returns {Promise<Object>} 图片列表
  */
 export const getImages = async () => {
-  const response = await fetch(`${host}/image/getImages`)
+  const response = await fetch(`${host}/api/images`)
   const data = await response.json()
   return data.data.map(item => ({
     ...item,
@@ -31,7 +31,7 @@ export const uploadImage = async (file) => {
     reader.readAsDataURL(file)
   })
 
-  const response = await fetch(`${host}/image/uploadImage`, {
+  const response = await fetch(`${host}/api/upload`, {
     method: 'POST',
     body: JSON.stringify({
       fileName: file.name,
@@ -46,7 +46,7 @@ export const uploadImage = async (file) => {
 }
 
 export const removeImage = async (id) => {
-  const response = await fetch(`${host}/image/removeImage`, {
+  const response = await fetch(`${host}/api/images/${id}`, {
     method: 'POST',
     body: JSON.stringify({ id }),
   })
