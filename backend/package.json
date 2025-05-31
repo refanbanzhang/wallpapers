@@ -1,19 +1,28 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "壁纸应用后端服务",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "lint": "eslint ."
   },
-  "keywords": [],
+  "keywords": ["wallpaper", "image", "upload"],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
     "multer": "^1.4.5-lts.1",
-    "sharp": "^0.33.0"
+    "sharp": "^0.33.0",
+    "dotenv": "^16.3.1",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "eslint": "^8.54.0"
   }
 }
