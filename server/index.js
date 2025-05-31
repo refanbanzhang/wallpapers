@@ -177,6 +177,13 @@ const upload = multer({
   limits: { fileSize: MAX_FILE_SIZE * 1024 * 1024 }
 });
 
+// 默认接口
+app.get('/', (req, res) => {
+  res.json({
+    message: '服务器运行正常',
+  });
+});
+
 // 处理图片上传
 app.post('/api/upload', upload.single('image'), async (req, res) => {
   try {
@@ -384,6 +391,7 @@ app.delete('/api/images/:id', (req, res) => {
     res.status(500).json({ error: '删除图片失败', message: error.message });
   }
 });
+
 
 // 启动服务器
 app.listen(port, () => {
