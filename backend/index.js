@@ -27,7 +27,7 @@ app.use(cors());
 app.use(express.json());
 
 // 创建上传目录
-const UPLOADS_DIR = path.join(__dirname, '../uploads');
+const UPLOADS_DIR = path.join(__dirname, './upload');
 const ORIGINAL_DIR = path.join(UPLOADS_DIR, 'origin');
 const THUMBNAILS_DIR = path.join(UPLOADS_DIR, 'thumbnails');
 
@@ -82,7 +82,7 @@ const safeUnlink = (filePath) => {
 };
 
 // 静态文件服务
-app.use('/uploads', express.static(UPLOADS_DIR));
+app.use('/upload', express.static(UPLOADS_DIR));
 
 // 安全的文件名生成函数
 const generateSafeFilename = (originalName) => {
@@ -206,8 +206,8 @@ app.post('/api/upload', upload.single('image'), async (req, res) => {
     res.json({
       success: true,
       data: {
-        originalUrl: `/uploads/origin/${filename}`,
-        thumbnailUrl: `/uploads/thumbnails/${filename}`,
+        originalUrl: `/upload/origin/${filename}`,
+        thumbnailUrl: `/upload/thumbnails/${filename}`,
         fileSize: fileSize,
         fileName: filename
       }
@@ -262,8 +262,8 @@ app.get('/api/images', (req, res) => {
           images.push({
             id: fileId,
             fileName: displayName,
-            originalUrl: `/uploads/origin/${filename}`,
-            thumbnailUrl: `/uploads/thumbnails/${thumbnailFile}`,
+            originalUrl: `/upload/origin/${filename}`,
+            thumbnailUrl: `/upload/thumbnails/${thumbnailFile}`,
             fileSize: fileStats.size,
             uploadTime: new Date(fileStats.mtime).toLocaleString()
           });
