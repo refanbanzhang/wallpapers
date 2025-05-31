@@ -1,4 +1,4 @@
-const host = 'http://localhost:3000'
+const host = ''
 
 /**
  * 获取图片列表
