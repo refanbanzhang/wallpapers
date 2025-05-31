@@ -18,11 +18,11 @@ const router = createRouter({
       component: () => import('@/views/AboutView.vue'),
     },
     {
-      path: '/upload',
-      name: 'upload',
+      path: '/manage',
+      name: 'manage',
       component: () => import('@/views/UploadView.vue'),
       meta: {
-        title: '图片上传',
+        title: '图片管理',
       },
     },
   ],

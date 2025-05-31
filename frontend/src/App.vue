@@ -8,7 +8,7 @@ import { RouterView, RouterLink } from 'vue-router'
       <h1>壁纸应用</h1>
       <div class="nav-links">
         <RouterLink to="/" class="nav-link" active-class="active-link" exact>首页</RouterLink>
-        <RouterLink to="/upload" class="nav-link" active-class="active-link">上传</RouterLink>
+        <RouterLink to="/manage" class="nav-link" active-class="active-link">图片管理</RouterLink>
         <RouterLink to="/about" class="nav-link" active-class="active-link">关于</RouterLink>
       </div>
     </div>
