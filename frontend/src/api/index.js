@@ -20,26 +20,12 @@ export const getImages = async () => {
  * @returns {Promise<Object>} 上传结果
  */
 export const uploadImage = async (file) => {
-  // 使用FileReader读取文件并转换为base64
-  const base64 = await new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const base64Data = e.target.result.split(',')[1]
-      resolve(base64Data)
-    }
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
+  const formData = new FormData()
+  formData.append('file', file)
 
   const response = await fetch(`${host}/api/upload`, {
     method: 'POST',
-    body: JSON.stringify({
-      fileName: file.name,
-      fileContent: base64,
-    }),
-    headers: {
-      'Content-Type': 'application/json'
-    }
+    body: formData,
   })
   const data = await response.json()
   return data.data

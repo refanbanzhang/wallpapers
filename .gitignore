@@ -30,6 +30,6 @@ coverage
 *.tsbuildinfo
 
 # 上传的图片文件
-/upload/
+/backend/upload/
 
 .DS_Store

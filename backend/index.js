@@ -185,7 +185,7 @@ app.get('/', (req, res) => {
 });
 
 // 处理图片上传
-app.post('/api/upload', upload.single('image'), async (req, res) => {
+app.post('/api/upload', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: '未接收到文件' });
