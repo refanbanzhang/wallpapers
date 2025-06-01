@@ -47,18 +47,18 @@ const categoryLoading = ref(false)
 // 按分类和搜索关键词筛选壁纸
 const filteredWallpapers = computed(() => {
   // 先按分类筛选
-  let filtered = activeCategory.value === 'all' 
-    ? wallpapers.value 
+  let filtered = activeCategory.value === 'all'
+    ? wallpapers.value
     : wallpapers.value.filter(wallpaper => wallpaper.category === activeCategory.value)
-  
+
   // 再按搜索关键词筛选
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase()
-    filtered = filtered.filter(wallpaper => 
+    filtered = filtered.filter(wallpaper =>
       wallpaper.fileName.toLowerCase().includes(keyword)
     )
   }
-  
+
   return filtered
 })
 
@@ -79,12 +79,12 @@ const fetchWallpapers = async (search = '') => {
 // 处理搜索输入
 const handleSearch = (value: string) => {
   searchKeyword.value = value
-  
+
   // 防抖处理，避免频繁请求
   if (searchTimeout.value) {
     clearTimeout(searchTimeout.value)
   }
-  
+
   searchTimeout.value = window.setTimeout(() => {
     fetchWallpapers(value)
   }, 500) // 500ms 延迟
@@ -197,7 +197,7 @@ const saveCategory = async () => {
             :label="item.label"
           />
         </t-tabs>
-        
+
         <div class="search-container">
           <t-input
             v-model="searchKeyword"
@@ -206,9 +206,28 @@ const saveCategory = async () => {
             @change="handleSearch"
           >
             <template #suffix-icon>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle
+                  cx="11"
+                  cy="11"
+                  r="8"
+                ></circle>
+                <line
+                  x1="21"
+                  y1="21"
+                  x2="16.65"
+                  y2="16.65"
+                ></line>
               </svg>
             </template>
           </t-input>
@@ -231,118 +250,118 @@ const saveCategory = async () => {
 
       <div v-else>
         <div class="wallpapers-grid">
+          <div
+            class="wallpaper-card"
+            v-for="wallpaper in filteredWallpapers"
+            :key="wallpaper.id"
+            @click="onOpenModal(wallpaper)"
+          >
+            <img
+              :src="wallpaper.thumbnailUrl"
+              :alt="wallpaper.fileName"
+            />
+            <div class="wallpaper-info">
+              <span class="wallpaper-name">{{ wallpaper.fileName }}</span>
+              <span
+                class="wallpaper-resolution"
+                v-if="wallpaper.resolution"
+              >
+                {{ wallpaper.resolution.width }} × {{ wallpaper.resolution.height }}
+              </span>
+            </div>
+            <div
+              class="wallpaper-category"
+              :class="wallpaper.category"
+            >
+              {{categories.find(cat => cat.value === wallpaper.category)?.label}}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <t-dialog
+        :visible="dialogVisible"
+        :header="currentWallpaper?.fileName"
+        attach="body"
+        @close="onCloseDialog"
+        class="wallpaper-dialog"
+        width="auto"
+        top="5%"
+      >
         <div
-          class="wallpaper-card"
-          v-for="wallpaper in filteredWallpapers"
-          :key="wallpaper.id"
-          @click="onOpenModal(wallpaper)"
+          v-if="currentWallpaper"
+          class="dialog-content"
         >
           <img
-            :src="wallpaper.thumbnailUrl"
-            :alt="wallpaper.fileName"
+            :src="currentWallpaper.originalUrl"
+            :alt="currentWallpaper.fileName"
+            class="dialog-image"
           />
-          <div class="wallpaper-info">
-            <span class="wallpaper-name">{{ wallpaper.fileName }}</span>
-            <span
-              class="wallpaper-resolution"
-              v-if="wallpaper.resolution"
-            >
-              {{ wallpaper.resolution.width }} × {{ wallpaper.resolution.height }}
-            </span>
-          </div>
-          <div
-            class="wallpaper-category"
-            :class="wallpaper.category"
-          >
-            {{categories.find(cat => cat.value === wallpaper.category)?.label}}
+          <div class="dialog-image-info">
+            <p>上传时间: {{ currentWallpaper.uploadTime }}</p>
+            <p>文件大小: {{ Math.round(currentWallpaper.fileSize / 1024) }} KB</p>
+            <p v-if="currentWallpaper.category">
+              分类: {{categories.find(cat => cat.value === currentWallpaper?.category)?.label}}
+            </p>
           </div>
         </div>
-      </div>
-    </div>
+        <template #footer>
+          <div class="dialog-footer">
+            <t-button
+              theme="default"
+              @click="openCategoryDialog"
+            >设置分类</t-button>
+            <t-button
+              theme="default"
+              @click="onCloseDialog"
+            >关闭</t-button>
+            <t-button
+              theme="primary"
+              :loading="loading"
+              @click="handleDownload"
+            >下载</t-button>
+          </div>
+        </template>
+      </t-dialog>
 
-    <t-dialog
-      :visible="dialogVisible"
-      :header="currentWallpaper?.fileName"
-      attach="body"
-      @close="onCloseDialog"
-      class="wallpaper-dialog"
-      width="auto"
-      top="5%"
-    >
-      <div
-        v-if="currentWallpaper"
-        class="dialog-content"
+      <!-- 分类设置对话框 -->
+      <t-dialog
+        :visible="categoryDialogVisible"
+        header="设置壁纸分类"
+        attach="body"
+        @close="categoryDialogVisible = false"
+        class="category-dialog"
+        width="500px"
       >
-        <img
-          :src="currentWallpaper.originalUrl"
-          :alt="currentWallpaper.fileName"
-          class="dialog-image"
-        />
-        <div class="dialog-image-info">
-          <p>上传时间: {{ currentWallpaper.uploadTime }}</p>
-          <p>文件大小: {{ Math.round(currentWallpaper.fileSize / 1024) }} KB</p>
-          <p v-if="currentWallpaper.category">
-            分类: {{categories.find(cat => cat.value === currentWallpaper?.category)?.label}}
-          </p>
+        <div class="category-form">
+          <t-select
+            v-model="selectedCategory"
+            placeholder="请选择分类"
+            clearable
+          >
+            <t-option
+              v-for="item in categories.filter(c => c.value !== 'all')"
+              :key="item.value"
+              :value="item.value"
+              :label="item.label"
+            />
+          </t-select>
         </div>
-      </div>
-      <template #footer>
-        <div class="dialog-footer">
-          <t-button
-            theme="default"
-            @click="openCategoryDialog"
-          >设置分类</t-button>
-          <t-button
-            theme="default"
-            @click="onCloseDialog"
-          >关闭</t-button>
-          <t-button
-            theme="primary"
-            :loading="loading"
-            @click="handleDownload"
-          >下载</t-button>
-        </div>
-      </template>
-    </t-dialog>
-
-    <!-- 分类设置对话框 -->
-    <t-dialog
-      :visible="categoryDialogVisible"
-      header="设置壁纸分类"
-      attach="body"
-      @close="categoryDialogVisible = false"
-      class="category-dialog"
-      width="500px"
-    >
-      <div class="category-form">
-        <t-select
-          v-model="selectedCategory"
-          placeholder="请选择分类"
-          clearable
-        >
-          <t-option
-            v-for="item in categories.filter(c => c.value !== 'all')"
-            :key="item.value"
-            :value="item.value"
-            :label="item.label"
-          />
-        </t-select>
-      </div>
-      <template #footer>
-        <div class="dialog-footer">
-          <t-button
-            theme="default"
-            @click="categoryDialogVisible = false"
-          >取消</t-button>
-          <t-button
-            theme="primary"
-            :loading="categoryLoading"
-            @click="saveCategory"
-          >保存</t-button>
-        </div>
-      </template>
-    </t-dialog>
-  </div>
+        <template #footer>
+          <div class="dialog-footer">
+            <t-button
+              theme="default"
+              @click="categoryDialogVisible = false"
+            >取消</t-button>
+            <t-button
+              theme="primary"
+              :loading="categoryLoading"
+              @click="saveCategory"
+            >保存</t-button>
+          </div>
+        </template>
+      </t-dialog>
+    </div>
   </div>
 </template>
 
