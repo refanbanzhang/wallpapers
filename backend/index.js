@@ -1,9 +1,6 @@
 // 主入口文件
 import express from 'express';
 import cors from 'cors';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
@@ -16,10 +13,6 @@ import { ensureDirectoriesExist } from './utils/fileUtils.js';
 
 // 加载环境变量
 dotenv.config();
-
-// ES模块中获取__dirname的替代方法
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // 创建Express应用
 const app = express();
@@ -54,15 +47,6 @@ ensureDirectoriesExist([
 
 // 静态文件服务
 app.use('/upload', express.static(config.upload.uploadsDir));
-
-// 根路径处理
-app.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: '服务器运行正常',
-    version: '1.0.0'
-  });
-});
 
 // 应用路由
 app.use('/api', routes);

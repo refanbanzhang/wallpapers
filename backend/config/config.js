@@ -14,7 +14,7 @@ const config = {
     port: process.env.PORT || 3000,
     host: process.env.HOST || 'localhost'
   },
-  
+
   // 文件上传配置
   upload: {
     // 单位MB
@@ -24,7 +24,7 @@ const config = {
     originalDir: path.join(ROOT_DIR, 'upload/origin'),
     thumbnailsDir: path.join(ROOT_DIR, 'upload/thumbnails')
   },
-  
+
   // 缩略图配置
   thumbnail: {
     width: 200,
@@ -32,7 +32,7 @@ const config = {
     // Sharp使用1-100的质量范围
     quality: 70
   },
-  
+
   // 允许的图片类型
   allowedImageTypes: [
     '.jpg', '.jpeg', '.png', '.gif', '.webp'

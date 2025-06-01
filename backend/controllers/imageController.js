@@ -160,7 +160,7 @@ export const batchDeleteImages = (req, res) => {
       return new Promise(resolve => {
         try {
           const { originalFile, thumbnailFile } = findImageFilesById(id);
-          
+
           // 删除文件
           let originalDeleted = false;
           let thumbnailDeleted = false;
