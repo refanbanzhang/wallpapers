@@ -4,6 +4,9 @@ import path from 'path';
 import config from '../config/config.js';
 import { generateThumbnail, safeUnlink, findImageFilesById } from '../utils/fileUtils.js';
 
+// 存储图片分类的映射
+const imageCategoryMap = new Map();
+
 /**
  * 上传图片
  */
@@ -66,7 +69,7 @@ export const getAllImages = (req, res) => {
 
         // 提取UUID作为文件ID（现在应该是第二个部分）
         const fileId = filenameParts.length >= 2 ? filenameParts[1] : '';
-        
+
         // 提取时间戳部分（现在应该是第三个部分）
         const timeStampPart = filenameParts.length >= 3 ? filenameParts[2] : '';
 
@@ -79,13 +82,17 @@ export const getAllImages = (req, res) => {
           });
 
         if (thumbnailFile) {
+          // 获取图片分类（如果存在）
+          const category = imageCategoryMap.get(fileId) || null;
+
           images.push({
             id: fileId,
             fileName: displayName,
             originalUrl: `/upload/origin/${filename}`,
             thumbnailUrl: `/upload/thumbnails/${thumbnailFile}`,
             fileSize: fileStats.size,
-            uploadTime: new Date(fileStats.mtime).toLocaleString()
+            uploadTime: new Date(fileStats.mtime).toLocaleString(),
+            category: category
           });
         }
       } catch (err) {
@@ -201,5 +208,45 @@ export const batchDeleteImages = (req, res) => {
   } catch (error) {
     console.error('批量删除图片失败:', error);
     res.status(500).json({ success: false, error: '批量删除图片失败', message: error.message });
+  }
+};
+
+/**
+ * 更新图片分类
+ */
+export const updateImageCategory = (req, res) => {
+  try {
+    const { id } = req.params;
+    const { category } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ success: false, error: '请提供有效的图片ID' });
+    }
+
+    if (!category) {
+      return res.status(400).json({ success: false, error: '请提供有效的分类' });
+    }
+
+    // 检查图片是否存在
+    const { originalFile } = findImageFilesById(id);
+
+    if (!originalFile) {
+      return res.status(404).json({ success: false, error: '图片不存在' });
+    }
+
+    // 更新分类映射
+    imageCategoryMap.set(id, category);
+
+    res.json({
+      success: true,
+      message: '分类更新成功',
+      data: {
+        id,
+        category
+      }
+    });
+  } catch (error) {
+    console.error('更新图片分类失败:', error);
+    res.status(500).json({ success: false, error: '更新图片分类失败', message: error.message });
   }
 };

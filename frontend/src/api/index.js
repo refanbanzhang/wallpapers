@@ -39,8 +39,27 @@ export const removeImage = async (id) => {
   return data.data
 }
 
+/**
+ * 更新图片分类
+ * @param {string} id 图片ID
+ * @param {string} category 分类名称
+ * @returns {Promise<Object>} 更新结果
+ */
+export const updateImageCategory = async (id, category) => {
+  const response = await fetch(`${host}/api/images/${id}/category`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ category })
+  })
+  const data = await response.json()
+  return data.data
+}
+
 export default {
   getImages,
   uploadImage,
   removeImage,
+  updateImageCategory
 }

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { Dialog as TDialog, Button as TButton, Loading as TLoading, Tabs as TTabs, TabPanel as TTabPanel } from 'tdesign-vue-next'
+import { Dialog as TDialog, Button as TButton, Loading as TLoading, Tabs as TTabs, TabPanel as TTabPanel, Select as TSelect, Option as TOption, MessagePlugin } from 'tdesign-vue-next'
 import type { TabValue } from 'tdesign-vue-next'
 import { downloadWallpaper } from '@/utils/download'
 import { getImageResolution } from '@/utils/image'
-import { getImages } from '@/api/index'
+import { getImages, updateImageCategory } from '@/api/index'
 
 interface Wallpaper {
   id: string
@@ -34,6 +34,11 @@ const currentWallpaper = ref<Wallpaper | null>(null)
 const loading = ref(false)
 const isLoading = ref(false)
 const activeCategory = ref('all')
+
+// 分类设置相关
+const categoryDialogVisible = ref(false)
+const selectedCategory = ref('')
+const categoryLoading = ref(false)
 
 // 按分类筛选壁纸
 const filteredWallpapers = computed(() => {
@@ -102,6 +107,47 @@ const handleDownload = async () => {
     console.error('下载失败', error)
   } finally {
     loading.value = false
+  }
+}
+
+// 打开分类设置对话框
+const openCategoryDialog = () => {
+  if (!currentWallpaper.value) return
+
+  // 设置当前选中的分类
+  selectedCategory.value = currentWallpaper.value.category || ''
+  categoryDialogVisible.value = true
+}
+
+// 保存分类设置
+const saveCategory = async () => {
+  if (!currentWallpaper.value) return
+
+  try {
+    categoryLoading.value = true
+
+    // 调用API更新分类
+    await updateImageCategory(currentWallpaper.value.id, selectedCategory.value)
+
+    // 更新本地数据
+    if (currentWallpaper.value) {
+      currentWallpaper.value.category = selectedCategory.value
+
+      // 更新壁纸列表中的对应项
+      const index = wallpapers.value.findIndex(w => w.id === currentWallpaper.value?.id)
+      if (index !== -1) {
+        wallpapers.value[index].category = selectedCategory.value
+      }
+    }
+
+    // 关闭对话框
+    categoryDialogVisible.value = false
+    MessagePlugin.success('分类设置成功')
+  } catch (error) {
+    console.error('设置分类失败', error)
+    MessagePlugin.error('设置分类失败')
+  } finally {
+    categoryLoading.value = false
   }
 }
 </script>
@@ -197,6 +243,10 @@ const handleDownload = async () => {
         <div class="dialog-footer">
           <t-button
             theme="default"
+            @click="openCategoryDialog"
+          >设置分类</t-button>
+          <t-button
+            theme="default"
             @click="onCloseDialog"
           >关闭</t-button>
           <t-button
@@ -204,6 +254,44 @@ const handleDownload = async () => {
             :loading="loading"
             @click="handleDownload"
           >下载</t-button>
+        </div>
+      </template>
+    </t-dialog>
+
+    <!-- 分类设置对话框 -->
+    <t-dialog
+      :visible="categoryDialogVisible"
+      header="设置壁纸分类"
+      attach="body"
+      @close="categoryDialogVisible = false"
+      class="category-dialog"
+      width="500px"
+    >
+      <div class="category-form">
+        <t-select
+          v-model="selectedCategory"
+          placeholder="请选择分类"
+          clearable
+        >
+          <t-option
+            v-for="item in categories.filter(c => c.value !== 'all')"
+            :key="item.value"
+            :value="item.value"
+            :label="item.label"
+          />
+        </t-select>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <t-button
+            theme="default"
+            @click="categoryDialogVisible = false"
+          >取消</t-button>
+          <t-button
+            theme="primary"
+            :loading="categoryLoading"
+            @click="saveCategory"
+          >保存</t-button>
         </div>
       </template>
     </t-dialog>
@@ -339,6 +427,18 @@ const handleDownload = async () => {
 }
 
 .wallpaper-dialog :deep(.t-dialog__header) {
+  padding: 16px 24px;
+}
+
+.category-form {
+  padding: 16px 0;
+}
+
+.category-dialog :deep(.t-dialog__body) {
+  padding: 16px 24px;
+}
+
+.category-dialog :deep(.t-dialog__header) {
   padding: 16px 24px;
 }
 </style>
