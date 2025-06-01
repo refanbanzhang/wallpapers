@@ -20,17 +20,6 @@ interface Wallpaper {
   }
 }
 
-// 定义API返回的图片项类型
-interface GetImageApiItem {
-  _id: string
-  id?: string
-  fileName?: string
-  originalUrl: string
-  thumbnailUrl: string
-  uploadTime: string
-  fileSize: number
-}
-
 // 分类列表
 const categories = [
   { value: 'all', label: '全部' },
@@ -59,10 +48,7 @@ const fetchWallpapers = async () => {
   try {
     isLoading.value = true
     const data = await getImages()
-    wallpapers.value = data.map((item: GetImageApiItem) => ({
-      ...item,
-      id: item.id || item._id,
-    }))
+    wallpapers.value = data
     loadResolutions()
   } catch (error) {
     console.error('获取壁纸列表失败:', error)
