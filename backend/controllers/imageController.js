@@ -70,16 +70,9 @@ export const getAllImages = (req, res) => {
         // 提取UUID作为文件ID（现在应该是第二个部分）
         const fileId = filenameParts.length >= 2 ? filenameParts[1] : '';
 
-        // 提取时间戳部分（现在应该是第三个部分）
-        const timeStampPart = filenameParts.length >= 3 ? filenameParts[2] : '';
-
-        // 查找匹配的缩略图：使用UUID匹配
-        const thumbnailFile = fs.readdirSync(config.upload.thumbnailsDir)
-          .filter(file => !file.startsWith('.'))  // 同样过滤掉隐藏文件
-          .find(file => {
-            // 使用UUID匹配，确保是同一个文件
-            return file.includes(fileId);
-          });
+        // 查找匹配的缩略图：使用完全相同的文件名匹配
+        // 这样可以确保缩略图和原图是完全对应的
+        const thumbnailFile = fs.existsSync(path.join(config.upload.thumbnailsDir, filename)) ? filename : null;
 
         if (thumbnailFile) {
           // 获取图片分类（如果存在）
