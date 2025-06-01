@@ -7,10 +7,7 @@ const host = ''
 export const getImages = async () => {
   const response = await fetch(`${host}/api/images`)
   const data = await response.json()
-  return data.data.map(item => ({
-    ...item,
-    id: item._id
-  }))
+  return data.data
 }
 
 /**
