@@ -13,8 +13,12 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     // 解决中文名乱码的问题
     file.originalname = Buffer.from(file.originalname, "latin1").toString("utf8");
-    // 生成新的安全文件名
-    const filename = generateSafeFilename(file.originalname);
+
+    // 从请求中获取分类信息（如果有）
+    const category = req.body && req.body.category ? req.body.category : '';
+
+    // 生成新的安全文件名（包含分类信息）
+    const filename = generateSafeFilename(file.originalname, category);
     cb(null, filename);
   },
 });

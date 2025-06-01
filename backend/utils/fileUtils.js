@@ -67,9 +67,10 @@ export const safeUnlink = (filePath) => {
 /**
  * 生成安全的文件名
  * @param {string} originalName 原始文件名
+ * @param {string} category 分类名称（可选）
  * @returns {string} 安全的文件名
  */
-export const generateSafeFilename = (originalName) => {
+export const generateSafeFilename = (originalName, category = '') => {
   try {
     // 提取文件扩展名
     const extname = path.extname(originalName);
@@ -79,20 +80,23 @@ export const generateSafeFilename = (originalName) => {
 
     // 生成UUID作为唯一标识符
     const uuid = uuidv4();
-    
+
     // 生成时间戳
     const timestamp = Date.now();
-    
+
+    // 添加分类信息（如果有）
+    const categoryPart = category ? `_cat_${category}` : '';
+
     // 判断文件名长度
-    const fullFilename = `${sanitizedBasename}_${uuid}_${timestamp}${extname}`;
+    const fullFilename = `${sanitizedBasename}_${uuid}${categoryPart}_${timestamp}${extname}`;
     // 大多数文件系统的文件名长度限制
     const maxFilenameLength = 240;
 
     // 如果文件名超长，则使用哈希替代
     if (Buffer.from(fullFilename).length > maxFilenameLength) {
-      // 使用原始文件名的哈希值 + UUID + 时间戳作为文件名
+      // 使用原始文件名的哈希值 + UUID + 分类 + 时间戳作为文件名
       const hash = crypto.createHash('md5').update(sanitizedBasename).digest('hex').substring(0, 10);
-      return `image_${hash}_${uuid}_${timestamp}${extname}`;
+      return `image_${hash}_${uuid}${categoryPart}_${timestamp}${extname}`;
     }
 
     return fullFilename;
@@ -140,6 +144,23 @@ export const generateThumbnail = async (
     console.error('生成缩略图失败:', error);
     return false;
   }
+};
+
+/**
+ * 从文件名中提取分类信息
+ * @param {string} filename 文件名
+ * @returns {string|null} 分类名称，如果没有则返回null
+ */
+export const extractCategoryFromFilename = (filename) => {
+  if (!filename) return null;
+
+  // 查找分类标记
+  const categoryMatch = filename.match(/_cat_([^_]+)_/);
+  if (categoryMatch && categoryMatch[1]) {
+    return categoryMatch[1];
+  }
+
+  return null;
 };
 
 /**

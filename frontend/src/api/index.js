@@ -12,13 +12,18 @@ export const getImages = async () => {
 
 /**
  * 上传图片到服务器
- * @param {string} fileContent base64字符串（不带data:image前缀）
- * @param {string} fileName 文件名（如 xxx.jpg）
+ * @param {File} file 文件对象
+ * @param {string} category 分类（可选）
  * @returns {Promise<Object>} 上传结果
  */
-export const uploadImage = async (file) => {
+export const uploadImage = async (file, category = '') => {
   const formData = new FormData()
   formData.append('file', file)
+
+  // 添加分类信息（如果有）
+  if (category) {
+    formData.append('category', category)
+  }
 
   const response = await fetch(`${host}/api/images/upload`, {
     method: 'POST',

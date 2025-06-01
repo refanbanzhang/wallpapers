@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { MessagePlugin, DialogPlugin, Loading } from 'tdesign-vue-next'
+import { MessagePlugin, DialogPlugin, Loading, Select as TSelect, Option as TOption } from 'tdesign-vue-next'
 import ImageUpload from '@/components/ImageUpload.vue'
 import { formatFileSize, deleteMultipleImages } from '@/utils/upload'
 import { downloadImage } from '@/utils/download'
@@ -34,6 +34,19 @@ const selectedImageIds = ref<string[]>([])
 
 // 是否处于选择模式
 const isSelectionMode = ref(false)
+
+// 分类选择
+const selectedCategory = ref('')
+
+// 分类列表
+const categoryOptions = [
+  { value: '', label: '无分类' },
+  { value: 'nature', label: '自然' },
+  { value: 'beauty', label: '美女' },
+  { value: 'anime', label: '动漫' },
+  { value: 'abstract', label: '抽象' },
+  { value: 'other', label: '其他' }
+]
 
 // 是否全选
 const isAllSelected = computed(() => {
@@ -97,9 +110,9 @@ const handleUploadSuccess = async (files: File[]) => {
   try {
     loading.value = true
 
-    // 批量上传到服务器
+    // 批量上传到服务器（传递分类信息）
     const uploadPromises = files.map(file =>
-      uploadImage(file)
+      uploadImage(file, selectedCategory.value)
     )
 
     await Promise.all(uploadPromises)
@@ -107,7 +120,7 @@ const handleUploadSuccess = async (files: File[]) => {
     // 获取最新的图片列表
     await fetchUploadedImages()
 
-    MessagePlugin.success(`成功上传 ${files.length} 张图片`)
+    MessagePlugin.success(`成功上传 ${files.length} 张图片${selectedCategory.value ? '，分类：' + selectedCategory.value : ''}`)
   } catch (error) {
     console.error('批量上传失败:', error)
     MessagePlugin.error(`批量上传失败: ${error instanceof Error ? error.message : '未知错误'}`)
@@ -197,6 +210,23 @@ const handleDownloadThumbnail = (image: UploadedImage) => {
   <div class="page-container">
     <h1 class="page-title">图片上传</h1>
     <p class="page-description">上传图片会自动生成缩略图，支持多种图片格式</p>
+
+    <!-- 分类选择 -->
+    <div class="category-selector">
+      <label>选择分类：</label>
+      <t-select
+        v-model="selectedCategory"
+        placeholder="请选择分类"
+        style="width: 200px;"
+      >
+        <t-option
+          v-for="option in categoryOptions"
+          :key="option.value"
+          :value="option.value"
+          :label="option.label"
+        />
+      </t-select>
+    </div>
 
     <div class="card upload-section">
       <ImageUpload
@@ -337,7 +367,14 @@ const handleDownloadThumbnail = (image: UploadedImage) => {
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 20px;
+}
+
+.category-selector {
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .page-title {

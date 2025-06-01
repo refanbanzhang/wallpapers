@@ -2,7 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 import config from '../config/config.js';
-import { generateThumbnail, safeUnlink, findImageFilesById } from '../utils/fileUtils.js';
+import { generateThumbnail, safeUnlink, findImageFilesById, extractCategoryFromFilename } from '../utils/fileUtils.js';
 
 // 存储图片分类的映射
 const imageCategoryMap = new Map();
@@ -75,8 +75,8 @@ export const getAllImages = (req, res) => {
         const thumbnailFile = fs.existsSync(path.join(config.upload.thumbnailsDir, filename)) ? filename : null;
 
         if (thumbnailFile) {
-          // 获取图片分类（如果存在）
-          const category = imageCategoryMap.get(fileId) || null;
+          // 从文件名中提取分类信息
+          const category = extractCategoryFromFilename(filename);
 
           images.push({
             id: fileId,
@@ -221,13 +221,40 @@ export const updateImageCategory = (req, res) => {
     }
 
     // 检查图片是否存在
-    const { originalFile } = findImageFilesById(id);
+    const { originalFile, thumbnailFile } = findImageFilesById(id);
 
     if (!originalFile) {
       return res.status(404).json({ success: false, error: '图片不存在' });
     }
 
-    // 更新分类映射
+    // 提取文件名部分
+    const originalFilePath = path.join(config.upload.originalDir, originalFile);
+    const fileExt = path.extname(originalFile);
+    const fileBaseName = path.basename(originalFile, fileExt);
+
+    // 从文件名中提取各个部分
+    const parts = fileBaseName.split('_');
+    const displayName = parts[0];
+    const uuid = parts[1];
+
+    // 查找时间戳部分（通常是最后一个部分）
+    let timestamp = parts[parts.length - 1];
+
+    // 创建新的文件名（包含分类信息）
+    const newFileName = `${displayName}_${uuid}_cat_${category}_${timestamp}${fileExt}`;
+    const newOriginalFilePath = path.join(config.upload.originalDir, newFileName);
+
+    // 重命名原图文件
+    fs.renameSync(originalFilePath, newOriginalFilePath);
+
+    // 如果存在缩略图，也需要重命名
+    if (thumbnailFile) {
+      const thumbnailFilePath = path.join(config.upload.thumbnailsDir, thumbnailFile);
+      const newThumbnailFilePath = path.join(config.upload.thumbnailsDir, newFileName);
+      fs.renameSync(thumbnailFilePath, newThumbnailFilePath);
+    }
+
+    // 更新分类映射（保留内存中的映射，以便兼容旧代码）
     imageCategoryMap.set(id, category);
 
     res.json({
@@ -235,7 +262,9 @@ export const updateImageCategory = (req, res) => {
       message: '分类更新成功',
       data: {
         id,
-        category
+        category,
+        originalUrl: `/upload/origin/${newFileName}`,
+        thumbnailUrl: `/upload/thumbnails/${newFileName}`
       }
     });
   } catch (error) {
