@@ -7,12 +7,12 @@ const host = ''
  */
 export const getImages = async (search = '') => {
   let url = `${host}/api/images`
-  
+
   // 如果有搜索关键词，添加到查询参数
   if (search) {
     url += `?search=${encodeURIComponent(search)}`
   }
-  
+
   const response = await fetch(url)
   const data = await response.json()
   return data.data
@@ -24,7 +24,7 @@ export const getImages = async (search = '') => {
  * @param {string} category 分类（可选）
  * @returns {Promise<Object>} 上传结果
  */
-export const uploadImage = async (file, category = '') => {
+export const uploadImage = async (file: string | Blob, category = '') => {
   const formData = new FormData()
   formData.append('file', file)
 
@@ -41,7 +41,7 @@ export const uploadImage = async (file, category = '') => {
   return data.data
 }
 
-export const removeImage = async (id) => {
+export const removeImage = async (id: string) => {
   const response = await fetch(`${host}/api/images/${id}`, {
     method: 'DELETE',
     headers: {
@@ -58,7 +58,7 @@ export const removeImage = async (id) => {
  * @param {string} category 分类名称
  * @returns {Promise<Object>} 更新结果
  */
-export const updateImageCategory = async (id, category) => {
+export const updateImageCategory = async (id: string, category: string) => {
   const response = await fetch(`${host}/api/images/${id}/category`, {
     method: 'PUT',
     headers: {
