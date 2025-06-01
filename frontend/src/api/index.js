@@ -2,10 +2,18 @@ const host = ''
 
 /**
  * 获取图片列表
+ * @param {string} search 搜索关键词（可选）
  * @returns {Promise<Object>} 图片列表
  */
-export const getImages = async () => {
-  const response = await fetch(`${host}/api/images`)
+export const getImages = async (search = '') => {
+  let url = `${host}/api/images`
+  
+  // 如果有搜索关键词，添加到查询参数
+  if (search) {
+    url += `?search=${encodeURIComponent(search)}`
+  }
+  
+  const response = await fetch(url)
   const data = await response.json()
   return data.data
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { Dialog as TDialog, Button as TButton, Loading as TLoading, Tabs as TTabs, TabPanel as TTabPanel, Select as TSelect, Option as TOption, MessagePlugin } from 'tdesign-vue-next'
+import { ref, onMounted, computed, watch } from 'vue'
+import { Dialog as TDialog, Button as TButton, Loading as TLoading, Tabs as TTabs, TabPanel as TTabPanel, Select as TSelect, Option as TOption, MessagePlugin, Input as TInput } from 'tdesign-vue-next'
 import type { TabValue } from 'tdesign-vue-next'
 import { downloadWallpaper } from '@/utils/download'
 import { getImageResolution } from '@/utils/image'
@@ -35,24 +35,38 @@ const loading = ref(false)
 const isLoading = ref(false)
 const activeCategory = ref('all')
 
+// 搜索相关
+const searchKeyword = ref('')
+const searchTimeout = ref<number | null>(null)
+
 // 分类设置相关
 const categoryDialogVisible = ref(false)
 const selectedCategory = ref('')
 const categoryLoading = ref(false)
 
-// 按分类筛选壁纸
+// 按分类和搜索关键词筛选壁纸
 const filteredWallpapers = computed(() => {
-  if (activeCategory.value === 'all') {
-    return wallpapers.value
+  // 先按分类筛选
+  let filtered = activeCategory.value === 'all' 
+    ? wallpapers.value 
+    : wallpapers.value.filter(wallpaper => wallpaper.category === activeCategory.value)
+  
+  // 再按搜索关键词筛选
+  if (searchKeyword.value) {
+    const keyword = searchKeyword.value.toLowerCase()
+    filtered = filtered.filter(wallpaper => 
+      wallpaper.fileName.toLowerCase().includes(keyword)
+    )
   }
-  return wallpapers.value.filter(wallpaper => wallpaper.category === activeCategory.value)
+  
+  return filtered
 })
 
 // 从API获取壁纸数据
-const fetchWallpapers = async () => {
+const fetchWallpapers = async (search = '') => {
   try {
     isLoading.value = true
-    const data = await getImages()
+    const data = await getImages(search)
     wallpapers.value = data
     loadResolutions()
   } catch (error) {
@@ -60,6 +74,20 @@ const fetchWallpapers = async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+// 处理搜索输入
+const handleSearch = (value: string) => {
+  searchKeyword.value = value
+  
+  // 防抖处理，避免频繁请求
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value)
+  }
+  
+  searchTimeout.value = window.setTimeout(() => {
+    fetchWallpapers(value)
+  }, 500) // 500ms 延迟
 }
 
 // 切换分类
@@ -156,34 +184,53 @@ const saveCategory = async () => {
   <div class="page-container">
     <h1 class="page-title">壁纸库</h1>
 
-    <div
-      v-if="isLoading"
-      class="loading-container"
-    >
-      <t-loading />
-    </div>
+    <div>
+      <div class="header-container">
+        <t-tabs
+          v-model="activeCategory"
+          @change="handleCategoryChange"
+        >
+          <t-tab-panel
+            v-for="item in categories"
+            :key="item.value"
+            :value="item.value"
+            :label="item.label"
+          />
+        </t-tabs>
+        
+        <div class="search-container">
+          <t-input
+            v-model="searchKeyword"
+            placeholder="搜索文件名..."
+            clearable
+            @change="handleSearch"
+          >
+            <template #suffix-icon>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </template>
+          </t-input>
+        </div>
+      </div>
 
-    <div
-      v-else-if="wallpapers.length === 0"
-      class="empty-state"
-    >
-      没有找到壁纸，请上传一些壁纸
-    </div>
-
-    <div v-else>
-      <t-tabs
-        v-model="activeCategory"
-        @change="handleCategoryChange"
+      <div
+        v-if="isLoading"
+        class="loading-container"
       >
-        <t-tab-panel
-          v-for="item in categories"
-          :key="item.value"
-          :value="item.value"
-          :label="item.label"
-        />
-      </t-tabs>
+        <t-loading />
+      </div>
 
-      <div class="wallpapers-grid">
+      <div
+        v-else-if="wallpapers.length === 0"
+        class="empty-state"
+      >
+        没有找到壁纸，请上传一些壁纸
+      </div>
+
+      <div v-else>
+        <div class="wallpapers-grid">
         <div
           class="wallpaper-card"
           v-for="wallpaper in filteredWallpapers"
@@ -296,9 +343,27 @@ const saveCategory = async () => {
       </template>
     </t-dialog>
   </div>
+  </div>
 </template>
 
 <style scoped>
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-container {
+  width: 300px;
+}
+
 .wallpapers-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -413,7 +478,8 @@ const saveCategory = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 200px;
+  height: 300px;
+  margin-top: 20px;
 }
 
 .empty-state {

@@ -46,6 +46,7 @@ export const uploadImage = async (req, res) => {
  */
 export const getAllImages = (req, res) => {
   try {
+    const { search } = req.query;
     const images = [];
 
     // 读取原图目录
@@ -78,6 +79,11 @@ export const getAllImages = (req, res) => {
           // 从文件名中提取分类信息
           const category = extractCategoryFromFilename(filename);
 
+          // 如果有搜索关键词，则过滤文件名
+          if (search && !displayName.toLowerCase().includes(search.toLowerCase())) {
+            return; // 跳过不匹配的文件
+          }
+
           images.push({
             id: fileId,
             fileName: displayName,
@@ -100,7 +106,7 @@ export const getAllImages = (req, res) => {
     });
   } catch (error) {
     console.error('获取图片列表失败:', error);
-    res.status(500).json({ success: false, error: '获取图片列表失败', message: error.message });
+    res.status(500).json({ success: false, error: '获取图片列表失败' });
   }
 };
 
