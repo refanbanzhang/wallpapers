@@ -2,6 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 import sharp from 'sharp';
 import config from '../config/config.js';
 
@@ -76,30 +77,32 @@ export const generateSafeFilename = (originalName) => {
     // 生成安全的基本文件名
     const sanitizedBasename = path.basename(originalName, extname);
 
-    // 生成时间戳和随机字符串
+    // 生成UUID作为唯一标识符
+    const uuid = uuidv4();
+    
+    // 生成时间戳
     const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 8);
-
+    
     // 判断文件名长度
-    const fullFilename = `${sanitizedBasename}_${timestamp}_${randomString}${extname}`;
+    const fullFilename = `${sanitizedBasename}_${uuid}_${timestamp}${extname}`;
     // 大多数文件系统的文件名长度限制
     const maxFilenameLength = 240;
 
     // 如果文件名超长，则使用哈希替代
     if (Buffer.from(fullFilename).length > maxFilenameLength) {
-      // 使用原始文件名的哈希值 + 时间戳 + 随机字符串作为文件名
+      // 使用原始文件名的哈希值 + UUID + 时间戳作为文件名
       const hash = crypto.createHash('md5').update(sanitizedBasename).digest('hex').substring(0, 10);
-      return `image_${hash}_${timestamp}_${randomString}${extname}`;
+      return `image_${hash}_${uuid}_${timestamp}${extname}`;
     }
 
     return fullFilename;
   } catch (error) {
     console.error('文件名处理错误:', error);
     // 出现错误时使用备用文件名
+    const uuid = uuidv4();
     const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 8);
     const extname = path.extname(originalName) || '.jpg';
-    return `image_${timestamp}_${randomString}${extname}`;
+    return `image_${uuid}_${timestamp}${extname}`;
   }
 };
 
@@ -141,22 +144,18 @@ export const generateThumbnail = async (
 
 /**
  * 根据ID查找原图和缩略图文件
- * @param {string} id 文件ID
+ * @param {string} id 文件ID (UUID)
  * @returns {Object} 包含原图和缩略图文件名的对象
  */
 export const findImageFilesById = (id) => {
-  // 从ID中提取时间戳部分
-  const idParts = id.split('_');
-  const timeStampPart = idParts.length >= 2 ? idParts[1] : '';
-
-  // 查找匹配的文件
+  // 查找包含UUID的文件
   const originalFile = fs.readdirSync(config.upload.originalDir)
     .filter(file => !file.startsWith('.'))
-    .find(file => file.includes(timeStampPart));
+    .find(file => file.includes(id));
 
   const thumbnailFile = fs.readdirSync(config.upload.thumbnailsDir)
     .filter(file => !file.startsWith('.'))
-    .find(file => file.includes(timeStampPart));
+    .find(file => file.includes(id));
 
   return { originalFile, thumbnailFile };
 };

@@ -16,7 +16,7 @@ dotenv.config();
 
 // 创建Express应用
 const app = express();
-const port = process.env.PORT || 3000;
+const port = config.server.port;
 
 // 安全增强
 app.use(helmet());

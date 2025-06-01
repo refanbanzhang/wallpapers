@@ -64,20 +64,18 @@ export const getAllImages = (req, res) => {
         // 只获取第一部分作为显示名称
         const displayName = filenameParts[0] + path.extname(filename);
 
-        // 文件ID是文件名去掉扩展名
-        const fileId = path.basename(filename, path.extname(filename));
+        // 提取UUID作为文件ID（现在应该是第二个部分）
+        const fileId = filenameParts.length >= 2 ? filenameParts[1] : '';
+        
+        // 提取时间戳部分（现在应该是第三个部分）
+        const timeStampPart = filenameParts.length >= 3 ? filenameParts[2] : '';
 
-        // 提取时间戳部分（现在应该是第二个部分）
-        const timeStampPart = filenameParts.length >= 2 ? filenameParts[1] : '';
-        // 提取随机字符串部分（现在应该是第三个部分）
-        const randomPart = filenameParts.length >= 3 ? filenameParts[2].split('.')[0] : '';
-
-        // 查找匹配的缩略图：使用更宽松的匹配逻辑
+        // 查找匹配的缩略图：使用UUID匹配
         const thumbnailFile = fs.readdirSync(config.upload.thumbnailsDir)
           .filter(file => !file.startsWith('.'))  // 同样过滤掉隐藏文件
           .find(file => {
-            // 如果时间戳相同，认为是同一组文件
-            return file.includes(timeStampPart) && (randomPart ? file.includes(randomPart) : true);
+            // 使用UUID匹配，确保是同一个文件
+            return file.includes(fileId);
           });
 
         if (thumbnailFile) {

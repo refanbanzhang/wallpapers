@@ -23,7 +23,7 @@ export const uploadImage = async (file) => {
   const formData = new FormData()
   formData.append('file', file)
 
-  const response = await fetch(`${host}/api/upload`, {
+  const response = await fetch(`${host}/api/images/upload`, {
     method: 'POST',
     body: formData,
   })
@@ -33,8 +33,10 @@ export const uploadImage = async (file) => {
 
 export const removeImage = async (id) => {
   const response = await fetch(`${host}/api/images/${id}`, {
-    method: 'POST',
-    body: JSON.stringify({ id }),
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json'
+    }
   })
   const data = await response.json()
   return data.data
