@@ -240,8 +240,8 @@ const handleDrop = async (e: DragEvent) => {
 
 .upload-area {
   width: 100%;
-  border: 2px dashed rgba(130, 171, 224, 0.56);
-  border-radius: 20px;
+  border: 2px dashed #d1d1d1;
+  border-radius: var(--radius-md);
   padding: 28px;
   display: flex;
   flex-direction: column;
@@ -255,26 +255,19 @@ const handleDrop = async (e: DragEvent) => {
     background-color 0.24s ease;
   position: relative;
   min-height: 210px;
-  background:
-    linear-gradient(155deg, rgba(255, 255, 255, 0.78), rgba(231, 245, 255, 0.52)),
-    radial-gradient(circle at 10% 20%, rgba(113, 170, 255, 0.14), transparent 30%),
-    radial-gradient(circle at 90% 10%, rgba(77, 213, 193, 0.17), transparent 34%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    0 10px 24px rgba(56, 86, 131, 0.14);
+  background: #fafafa;
+  box-shadow: 0 3px 10px rgba(17, 17, 17, 0.06);
 }
 
 .upload-area:hover {
-  border-color: rgba(141, 189, 245, 0.86);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.86),
-    0 18px 30px rgba(56, 90, 142, 0.22);
+  border-color: #b8b8b8;
+  box-shadow: 0 8px 20px rgba(17, 17, 17, 0.1);
   transform: translateY(-2px);
 }
 
 .upload-area.is-dragging {
-  border-color: rgba(108, 162, 232, 0.95);
-  background-color: rgba(196, 223, 255, 0.38);
+  border-color: #8c8c8c;
+  background-color: #f4f4f4;
   transform: scale(1.01) translateY(-1px);
 }
 
@@ -289,8 +282,8 @@ const handleDrop = async (e: DragEvent) => {
   width: 20px;
   height: 20px;
   border-radius: 999px;
-  border: 2px solid rgba(84, 129, 255, 0.28);
-  border-top-color: var(--brand-500);
+  border: 2px solid rgba(60, 60, 60, 0.2);
+  border-top-color: #222222;
   animation: spin 0.8s linear infinite;
 }
 
@@ -308,7 +301,7 @@ const handleDrop = async (e: DragEvent) => {
 }
 
 .upload-icon {
-  color: #4a88ef;
+  color: #444444;
   margin-bottom: 8px;
 }
 
@@ -334,22 +327,21 @@ const handleDrop = async (e: DragEvent) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(145deg, rgba(198, 224, 255, 0.36), rgba(223, 250, 245, 0.34));
-  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.84);
+  border-radius: var(--radius-sm);
   z-index: 10;
   gap: 16px;
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.72);
+  border: 1px solid #d4d4d4;
 }
 
 .drag-icon {
-  color: #4285ec;
+  color: #444444;
 }
 
 .drag-text {
   font-size: 18px;
   font-weight: 700;
-  color: #185093;
+  color: #1f1f1f;
 }
 
 @keyframes spin {

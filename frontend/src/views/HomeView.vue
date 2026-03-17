@@ -419,44 +419,49 @@ const handleDialogImageError = () => {
 <style scoped>
 .home-view {
   display: grid;
-  gap: 22px;
+  gap: 20px;
 }
 
 .hero-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 230px;
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 14px;
   align-items: stretch;
 }
 
+.hero-panel > div:first-child {
+  padding: clamp(18px, 2.4vw, 28px);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: #fafafa;
+}
+
 .hero-metric {
-  background:
-    linear-gradient(155deg, rgba(255, 255, 255, 0.84), rgba(207, 230, 255, 0.52)),
-    radial-gradient(circle at 80% 10%, rgba(104, 169, 255, 0.45), transparent 45%);
-  color: #1a3a63;
+  background: #ffffff;
+  color: #1f1f1f;
   display: flex;
   flex-direction: column;
   justify-content: center;
   min-height: 170px;
-  border: 1px solid rgba(255, 255, 255, 0.78);
+  border: 1px solid var(--border-color);
 }
 
 .metric-label {
   font-size: 13px;
-  letter-spacing: 0.3px;
-  opacity: 0.78;
+  letter-spacing: 0.2px;
+  color: var(--text-secondary);
 }
 
 .metric-value {
   font-family: var(--font-display);
-  font-size: clamp(34px, 5vw, 56px);
+  font-size: clamp(34px, 5vw, 52px);
   font-weight: 600;
   line-height: 1;
 }
 
 .metric-sub {
   font-size: 13px;
-  opacity: 0.76;
+  color: var(--text-tertiary);
 }
 
 .control-panel {
@@ -476,52 +481,47 @@ const handleDialogImageError = () => {
 .category-pill {
   min-height: 42px;
   padding: 9px 15px;
-  border: 1px solid rgba(255, 255, 255, 0.52);
+  border: 1px solid var(--border-strong);
   border-radius: 999px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.76), rgba(236, 247, 255, 0.54));
+  background: #ffffff;
   color: var(--text-secondary);
   font-weight: 600;
   transition:
     transform 0.2s ease,
-    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease,
     color 0.2s ease;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
 }
 
 .category-pill:hover {
-  color: #1d4f96;
+  color: #1f1f1f;
   transform: translateY(-1px);
-  box-shadow:
-    0 8px 18px rgba(92, 128, 188, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.84);
+  border-color: #bcbcbc;
+  background: #f7f7f7;
 }
 
 .category-pill.is-active {
-  border-color: rgba(255, 255, 255, 0.74);
-  color: #113154;
-  background: linear-gradient(136deg, rgba(255, 255, 255, 0.86), rgba(173, 210, 255, 0.72));
-  box-shadow:
-    0 10px 22px rgba(92, 126, 188, 0.26),
-    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  border-color: #222222;
+  color: #ffffff;
+  background: #222222;
 }
 
 .search-box {
   width: min(100%, 360px);
   min-height: 44px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.52);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(239, 250, 255, 0.58));
+  border: 1px solid var(--border-strong);
+  background: #ffffff;
   padding: 0 14px;
   display: inline-flex;
   align-items: center;
   gap: 10px;
   color: var(--text-tertiary);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76);
 }
 
 .search-box:focus-within {
-  border-color: rgba(146, 189, 245, 0.74);
-  box-shadow: 0 0 0 4px rgba(125, 175, 245, 0.24);
+  border-color: #8c8c8c;
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
 }
 
 .search-box input {
@@ -533,7 +533,7 @@ const handleDialogImageError = () => {
 }
 
 .search-box input::placeholder {
-  color: #8b9ab0;
+  color: #aaaaaa;
 }
 
 .wallpapers-grid {
@@ -546,21 +546,21 @@ const handleDialogImageError = () => {
   position: relative;
   overflow: hidden;
   aspect-ratio: 16 / 10;
-  border-radius: 20px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  box-shadow: 0 12px 28px rgba(48, 79, 127, 0.2);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 3px 10px rgba(17, 17, 17, 0.07);
   transform: translateY(0);
   transition:
-    transform 0.28s ease,
-    box-shadow 0.28s ease,
-    border-color 0.28s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .wallpaper-card:hover {
-  transform: translateY(-8px);
-  border-color: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 22px 36px rgba(48, 81, 130, 0.28);
+  transform: translateY(-2px);
+  border-color: #cccccc;
+  box-shadow: 0 8px 20px rgba(17, 17, 17, 0.12);
 }
 
 .wallpaper-card img {
@@ -575,9 +575,8 @@ const handleDialogImageError = () => {
   right: 0;
   bottom: 0;
   padding: 12px 12px 11px;
-  color: #f4f9ff;
-  background: linear-gradient(to top, rgba(8, 23, 46, 0.86), rgba(8, 23, 46, 0.38), transparent);
-  backdrop-filter: blur(6px);
+  color: #ffffff;
+  background: linear-gradient(to top, rgba(17, 17, 17, 0.72), rgba(17, 17, 17, 0.22), transparent);
 }
 
 .wallpaper-name {
@@ -589,39 +588,45 @@ const handleDialogImageError = () => {
 }
 
 .wallpaper-resolution {
-  font-family: 'Space Grotesk', monospace;
+  font-family: var(--font-body);
   font-size: 12px;
-  opacity: 0.92;
+  opacity: 0.9;
 }
 
 .wallpaper-category {
   position: absolute;
   top: 12px;
   right: 12px;
-  padding: 6px 11px;
+  padding: 5px 10px;
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.22px;
-  color: #eaf5ff;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(8px);
+  color: #555555;
+  border: 1px solid #d8d8d8;
+  background: rgba(255, 255, 255, 0.88);
 }
 
 .wallpaper-category.nature {
-  background: rgba(50, 162, 135, 0.72);
+  border-color: #cadfce;
+  background: #eef6f0;
+  color: #3f6448;
 }
 
 .wallpaper-category.beauty {
-  background: rgba(214, 111, 96, 0.72);
+  border-color: #e6cdcd;
+  background: #f8efef;
+  color: #7d4d4d;
 }
 
 .wallpaper-category.anime {
-  background: rgba(91, 133, 223, 0.72);
+  border-color: #d4daea;
+  background: #eff2f8;
+  color: #4d5f7d;
 }
 
 .wallpaper-category.default {
-  background: rgba(40, 66, 104, 0.7);
+  background: #f3f3f3;
 }
 
 .dialog-content {
@@ -634,14 +639,14 @@ const handleDialogImageError = () => {
   max-width: 100%;
   max-height: 74vh;
   object-fit: contain;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 14px 24px rgba(41, 67, 108, 0.22);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 18px rgba(17, 17, 17, 0.1);
 }
 
 .dialog-image-info {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -650,10 +655,9 @@ const handleDialogImageError = () => {
   display: grid;
   gap: 4px;
   padding: 10px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.62);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(230, 244, 255, 0.46));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: #fafafa;
 }
 
 .info-row span {
@@ -664,7 +668,7 @@ const handleDialogImageError = () => {
 .info-row strong {
   font-size: 12px;
   letter-spacing: 0.2px;
-  color: var(--text-primary);
+  color: #2a2a2a;
 }
 
 .dialog-footer {

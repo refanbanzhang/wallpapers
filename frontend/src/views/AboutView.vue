@@ -18,8 +18,7 @@
 }
 
 .intro {
-  background:
-    linear-gradient(155deg, rgba(255, 255, 255, 0.82), rgba(226, 242, 255, 0.54)),
-    radial-gradient(circle at 95% 8%, rgba(122, 185, 255, 0.26), transparent 42%);
+  background: #fafafa;
+  border: 1px solid var(--border-color);
 }
 </style>

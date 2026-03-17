@@ -229,30 +229,35 @@ onMounted(() => {
 <style scoped>
 .upload-view {
   display: grid;
-  gap: 22px;
+  gap: 20px;
 }
 
 .upload-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 220px;
-  gap: 18px;
+  gap: 14px;
   align-items: stretch;
 }
 
+.upload-hero > div:first-child {
+  padding: clamp(18px, 2.4vw, 28px);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: #fafafa;
+}
+
 .hero-stats {
-  background:
-    linear-gradient(155deg, rgba(255, 255, 255, 0.84), rgba(206, 245, 233, 0.52)),
-    radial-gradient(circle at 80% 12%, rgba(94, 223, 192, 0.38), transparent 50%);
-  color: #1b4a56;
+  background: #ffffff;
+  color: #1f1f1f;
   display: grid;
   place-content: center;
   gap: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.78);
+  border: 1px solid var(--border-color);
 }
 
 .stats-label {
   font-size: 13px;
-  opacity: 0.8;
+  color: var(--text-secondary);
 }
 
 .stats-value {
@@ -281,32 +286,28 @@ onMounted(() => {
   min-height: 42px;
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.56);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.76), rgba(234, 247, 255, 0.52));
+  border: 1px solid var(--border-strong);
+  background: #ffffff;
   color: var(--text-secondary);
   font-weight: 600;
   transition:
-    transform 0.22s ease,
-    box-shadow 0.22s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease,
     color 0.22s ease;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76);
 }
 
 .category-option:hover {
-  color: #1e4f93;
+  color: #1f1f1f;
   transform: translateY(-1px);
-  box-shadow:
-    0 9px 18px rgba(84, 123, 186, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  border-color: #bcbcbc;
+  background: #f7f7f7;
 }
 
 .category-option.active {
-  border-color: rgba(255, 255, 255, 0.76);
-  background: linear-gradient(136deg, rgba(255, 255, 255, 0.85), rgba(178, 214, 255, 0.72));
-  color: #123455;
-  box-shadow:
-    0 10px 22px rgba(79, 123, 188, 0.26),
-    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  border-color: #222222;
+  background: #222222;
+  color: #ffffff;
 }
 
 .loading-inner {
@@ -339,10 +340,20 @@ onMounted(() => {
   min-height: 34px;
   padding: 0 12px;
   border-radius: 999px;
-  border: 1px solid rgba(137, 168, 214, 0.5);
+  border: 1px solid var(--border-strong);
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.7);
+  background: #ffffff;
   font-weight: 600;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.tool-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #bcbcbc;
+  background: #f7f7f7;
 }
 
 .gallery-grid {
@@ -353,18 +364,20 @@ onMounted(() => {
 
 .gallery-card {
   overflow: hidden;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.58);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.74), rgba(224, 242, 255, 0.52));
-  box-shadow: 0 12px 24px rgba(45, 78, 126, 0.16);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+  box-shadow: 0 3px 10px rgba(17, 17, 17, 0.07);
   transition:
-    transform 0.24s ease,
-    box-shadow 0.24s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .gallery-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 30px rgba(45, 78, 126, 0.24);
+  transform: translateY(-2px);
+  border-color: #cccccc;
+  box-shadow: 0 8px 20px rgba(17, 17, 17, 0.12);
 }
 
 .gallery-card img {
@@ -393,11 +406,21 @@ onMounted(() => {
 .delete-btn {
   min-height: 32px;
   border-radius: 999px;
-  border: 1px solid rgba(228, 112, 105, 0.45);
-  background: rgba(255, 240, 239, 0.76);
-  color: #b03f38;
+  border: 1px solid #dc8f8a;
+  background: #fff6f5;
+  color: #a53c35;
   font-size: 12px;
   font-weight: 700;
+  transition:
+    transform 0.18s ease,
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.delete-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #c96d66;
+  background: #ffefed;
 }
 
 .delete-btn:disabled,

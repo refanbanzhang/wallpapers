@@ -98,6 +98,8 @@ const submitLogin = async () => {
   width: min(100%, 460px);
   display: grid;
   gap: 16px;
+  border: 1px solid var(--border-color);
+  background: #ffffff;
 }
 
 .form-grid {
@@ -114,19 +116,19 @@ const submitLogin = async () => {
 
 .field input {
   min-height: 44px;
-  border-radius: 14px;
-  border: 1px solid rgba(128, 160, 206, 0.4);
-  background: rgba(255, 255, 255, 0.72);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: #ffffff;
   padding: 0 12px;
   color: var(--text-primary);
   transition:
-    border-color 0.22s ease,
-    box-shadow 0.22s ease;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .field input:focus {
-  border-color: rgba(124, 168, 236, 0.78);
-  box-shadow: 0 0 0 4px rgba(125, 175, 245, 0.2);
+  border-color: #8c8c8c;
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
   outline: none;
 }
 
@@ -138,21 +140,22 @@ const submitLogin = async () => {
 .login-btn {
   min-width: 120px;
   min-height: 42px;
-  border: 0;
+  border: 1px solid #222222;
   border-radius: 999px;
-  color: #fff;
+  color: #ffffff;
   font-weight: 700;
-  background: linear-gradient(135deg, #6da0ff, #4f88ff 55%, #4991ff);
-  box-shadow: 0 10px 20px rgba(63, 117, 220, 0.28);
+  background: #222222;
   transition:
-    transform 0.22s ease,
-    box-shadow 0.22s ease,
-    opacity 0.22s ease;
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .login-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 14px 26px rgba(63, 117, 220, 0.34);
+  background: #3a3a3a;
+  box-shadow: 0 8px 16px rgba(17, 17, 17, 0.2);
 }
 
 .login-btn:disabled {
