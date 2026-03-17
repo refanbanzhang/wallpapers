@@ -10,9 +10,10 @@ const router = useRouter()
 const route = useRoute()
 
 const loading = ref(false)
+// TODO: 发布的时候记得删除
 const form = reactive({
-  username: '',
-  password: '',
+  username: '15014095291',
+  password: '332881532',
 })
 
 const submitLogin = async () => {
