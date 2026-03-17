@@ -1,0 +1,57 @@
+name: Deploy
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Upload frontend dist
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          source: "frontend/dist/*"
+          target: "/usr/share/nginx/html/wallpaper"
+          strip_components: 2
+
+      - name: Deploy backend + reload pm2
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            set -euo pipefail
+
+            mkdir -p /var/www/wallpaper
+            if [ ! -d "/var/www/wallpaper/backend/.git" ]; then
+              git clone --depth 1 "${{ github.server_url }}/${{ github.repository }}.git" /var/www/wallpaper/repo
+              mkdir -p /var/www/wallpaper/backend
+              rsync -a --delete /var/www/wallpaper/repo/backend/ /var/www/wallpaper/backend/
+            else
+              cd /var/www/wallpaper/backend
+              git fetch --all --prune
+              git reset --hard origin/main
+            fi
+
+            cd /var/www/wallpaper/backend
+            npm ci --omit=dev
+
+            pm2 describe wallpaper >/dev/null 2>&1 || pm2 start index.js --name wallpaper
+            pm2 reload wallpaper
