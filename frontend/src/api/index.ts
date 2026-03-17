@@ -1,13 +1,41 @@
+import { clearAuthToken, getAuthToken } from '@/utils/auth'
+
 const apiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') || ''
 
 const buildUrl = (path: string) => `${apiBase}${path}`
 
+const redirectToLogin = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  if (window.location.pathname.startsWith('/login')) {
+    return
+  }
+
+  const currentPath = `${window.location.pathname}${window.location.search}`
+  window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`
+}
+
 const request = async <T>(url: string, init?: RequestInit): Promise<T> => {
-  const response = await fetch(url, init)
+  const headers = new Headers(init?.headers)
+  const token = getAuthToken()
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  const response = await fetch(url, {
+    ...init,
+    headers,
+  })
   const payload = await response.json().catch(() => ({}))
 
   if (!response.ok || payload.success === false) {
     const message = payload.error || payload.message || `请求失败 (${response.status})`
+    if (response.status === 401) {
+      clearAuthToken()
+      redirectToLogin()
+    }
     throw new Error(message)
   }
 
@@ -22,6 +50,22 @@ export interface ImageItem {
   fileSize: number
   uploadTime: string
   category?: string | null
+}
+
+export interface LoginResult {
+  token: string
+  tokenType: 'Bearer'
+  expiresIn: number
+}
+
+export const login = async (username: string, password: string): Promise<LoginResult> => {
+  return request<LoginResult>(buildUrl('/api/auth/login'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ username, password }),
+  })
 }
 
 export const getImages = async (search = ''): Promise<ImageItem[]> => {
@@ -60,6 +104,7 @@ export const updateImageCategory = async (id: string, category: string) => {
 }
 
 export default {
+  login,
   getImages,
   uploadImage,
   removeImage,

@@ -9,7 +9,7 @@ import {
   DEFAULT_THUMBNAIL_HEIGHT,
   DEFAULT_THUMBNAIL_QUALITY,
 } from '@/constants/constants'
-import { getImages, uploadImage } from '@/api/index'
+import { getImages, uploadImage, removeImage } from '@/api/index'
 
 interface ServerImage {
   id: string
@@ -40,9 +40,10 @@ const categoryOptions = [
 
 const uploadedImages = ref<UploadedImage[]>([])
 const loading = ref(false)
+const deletingId = ref('')
 const selectedCategory = ref('')
 
-const latestImages = computed(() => uploadedImages.value.slice(0, 12))
+const latestImages = computed(() => uploadedImages.value)
 
 const getCategoryLabel = (category?: string | null) => {
   if (!category) {
@@ -83,6 +84,29 @@ const handleUploadSuccess = async (files: File[]) => {
     MessagePlugin.error(`批量上传失败: ${error instanceof Error ? error.message : '未知错误'}`)
   } finally {
     loading.value = false
+  }
+}
+
+const refreshImages = async () => {
+  await fetchUploadedImages()
+}
+
+const handleDeleteImage = async (image: UploadedImage) => {
+  const confirmed = window.confirm(`确认删除图片「${image.fileName}」吗？`)
+  if (!confirmed) {
+    return
+  }
+
+  try {
+    deletingId.value = image.id
+    await removeImage(image.id)
+    uploadedImages.value = uploadedImages.value.filter((item) => item.id !== image.id)
+    MessagePlugin.success('图片已删除')
+  } catch (error) {
+    console.error('删除图片失败:', error)
+    MessagePlugin.error(error instanceof Error ? error.message : '删除图片失败')
+  } finally {
+    deletingId.value = ''
   }
 }
 
@@ -158,8 +182,18 @@ onMounted(() => {
       class="card gallery-panel"
     >
       <div class="gallery-head">
-        <h2 class="section-title">最近上传</h2>
-        <span>{{ latestImages.length }} / {{ uploadedImages.length }}</span>
+        <h2 class="section-title">图片管理</h2>
+        <div class="gallery-tools">
+          <span>{{ latestImages.length }} / {{ uploadedImages.length }}</span>
+          <button
+            type="button"
+            class="tool-btn"
+            :disabled="loading"
+            @click="refreshImages"
+          >
+            刷新
+          </button>
+        </div>
       </div>
 
       <div class="gallery-grid">
@@ -177,6 +211,14 @@ onMounted(() => {
             <p class="filename" :title="image.fileName">{{ image.fileName }}</p>
             <p>{{ image.fileSize }}</p>
             <p>{{ getCategoryLabel(image.category) }}</p>
+            <button
+              type="button"
+              class="delete-btn"
+              :disabled="deletingId === image.id"
+              @click.stop="handleDeleteImage(image)"
+            >
+              {{ deletingId === image.id ? '删除中...' : '删除' }}
+            </button>
           </div>
         </article>
       </div>
@@ -287,6 +329,22 @@ onMounted(() => {
   color: var(--text-secondary);
 }
 
+.gallery-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tool-btn {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(137, 168, 214, 0.5);
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+}
+
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
@@ -318,7 +376,7 @@ onMounted(() => {
 .gallery-info {
   padding: 10px;
   display: grid;
-  gap: 3px;
+  gap: 6px;
   color: var(--text-secondary);
   font-size: 12px;
 }
@@ -330,6 +388,22 @@ onMounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.delete-btn {
+  min-height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(228, 112, 105, 0.45);
+  background: rgba(255, 240, 239, 0.76);
+  color: #b03f38;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.delete-btn:disabled,
+.tool-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 900px) {

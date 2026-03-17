@@ -36,7 +36,15 @@ const config = {
   // 允许的图片类型
   allowedImageTypes: [
     '.jpg', '.jpeg', '.png', '.gif', '.webp'
-  ]
+  ],
+
+  // 后台登录认证配置
+  auth: {
+    username: process.env.ADMIN_USERNAME || 'admin',
+    password: process.env.ADMIN_PASSWORD || 'wallpaper123',
+    secret: process.env.AUTH_SECRET || 'wallpaper-dev-secret',
+    tokenExpiresInSeconds: Number(process.env.AUTH_TOKEN_EXPIRES_IN || 60 * 60 * 12)
+  }
 };
 
 export default config;

@@ -1,5 +1,26 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterView, RouterLink } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+
+import { clearAuthToken, isAuthenticated } from '@/utils/auth'
+
+const router = useRouter()
+const route = useRoute()
+
+const authLabel = computed(() => (isAuthenticated.value ? '退出登录' : '登录'))
+
+const handleAuthClick = async () => {
+  if (!isAuthenticated.value) {
+    await router.push('/login')
+    return
+  }
+
+  clearAuthToken()
+  if (route.path.startsWith('/manage')) {
+    await router.replace('/login')
+  }
+}
 </script>
 
 <template>
@@ -17,8 +38,22 @@ import { RouterView, RouterLink } from 'vue-router'
 
       <nav class="nav-links">
         <RouterLink to="/" class="nav-link" active-class="active-link">首页</RouterLink>
-        <RouterLink to="/manage" class="nav-link" active-class="active-link">图片管理</RouterLink>
+        <RouterLink
+          v-if="isAuthenticated"
+          to="/manage"
+          class="nav-link"
+          active-class="active-link"
+        >
+          图片管理
+        </RouterLink>
         <RouterLink to="/about" class="nav-link" active-class="active-link">关于</RouterLink>
+        <button
+          type="button"
+          class="auth-btn"
+          @click="handleAuthClick"
+        >
+          {{ authLabel }}
+        </button>
       </nav>
     </header>
 
@@ -121,6 +156,29 @@ import { RouterView, RouterLink } from 'vue-router'
     box-shadow 0.24s ease,
     background-color 0.24s ease;
   border: 1px solid transparent;
+}
+
+.auth-btn {
+  min-height: 42px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(230, 246, 255, 0.55));
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 14px;
+  transition:
+    transform 0.24s ease,
+    box-shadow 0.24s ease,
+    color 0.24s ease;
+}
+
+.auth-btn:hover {
+  color: var(--text-primary);
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 20px rgba(82, 118, 180, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
 }
 
 .nav-link:hover {

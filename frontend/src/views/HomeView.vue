@@ -11,6 +11,7 @@ import {
 import { downloadWallpaper } from '@/utils/download'
 import { getImageResolution } from '@/utils/image'
 import { getImages, updateImageCategory } from '@/api/index'
+import { isAuthenticated } from '@/utils/auth'
 
 interface Wallpaper {
   id: string
@@ -179,6 +180,10 @@ const saveCategory = async () => {
     categoryLoading.value = false
   }
 }
+
+const goToLogin = () => {
+  window.location.href = `/login?redirect=${encodeURIComponent('/manage')}`
+}
 </script>
 
 <template>
@@ -335,10 +340,18 @@ const saveCategory = async () => {
       <template #footer>
         <div class="dialog-footer">
           <t-button
+            v-if="isAuthenticated"
             theme="default"
             @click="openCategoryDialog"
           >
             设置分类
+          </t-button>
+          <t-button
+            v-else
+            theme="default"
+            @click="goToLogin"
+          >
+            登录后可设置分类
           </t-button>
           <t-button
             theme="default"

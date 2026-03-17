@@ -10,6 +10,7 @@ import sharp from 'sharp';
 import imageRoutes from '../routes/imageRoutes.js';
 import config from '../config/config.js';
 import { ensureDirectoriesExist, generateThumbnail } from '../utils/fileUtils.js';
+import { createAuthToken } from '../utils/authToken.js';
 
 test('DELETE /api/images/batch-delete should route to batch handler', async () => {
   ensureDirectoriesExist([
@@ -22,8 +23,15 @@ test('DELETE /api/images/batch-delete should route to batch handler', async () =
   app.use(express.json());
   app.use('/api/images', imageRoutes);
 
+  const token = createAuthToken(
+    { username: config.auth.username },
+    config.auth.secret,
+    config.auth.tokenExpiresInSeconds,
+  );
+
   const response = await request(app)
     .delete('/api/images/batch-delete')
+    .set('Authorization', `Bearer ${token}`)
     .send({ ids: ['non-existent-id'] });
 
   assert.equal(response.status, 200);
