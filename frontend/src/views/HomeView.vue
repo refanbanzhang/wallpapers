@@ -317,9 +317,18 @@ const saveCategory = async () => {
         />
 
         <div class="dialog-image-info">
-          <p><strong>上传时间：</strong>{{ formatUploadTime(currentWallpaper.uploadTime) }}</p>
-          <p><strong>文件大小：</strong>{{ Math.round(currentWallpaper.fileSize / 1024) }} KB</p>
-          <p><strong>图片分类：</strong>{{ getCategoryLabel(currentWallpaper.category) }}</p>
+          <p class="info-row">
+            <strong>上传时间</strong>
+            <span>{{ formatUploadTime(currentWallpaper.uploadTime) }}</span>
+          </p>
+          <p class="info-row">
+            <strong>文件大小</strong>
+            <span>{{ Math.round(currentWallpaper.fileSize / 1024) }} KB</span>
+          </p>
+          <p class="info-row">
+            <strong>图片分类</strong>
+            <span>{{ getCategoryLabel(currentWallpaper.category) }}</span>
+          </p>
         </div>
       </div>
 
@@ -395,41 +404,44 @@ const saveCategory = async () => {
 <style scoped>
 .home-view {
   display: grid;
-  gap: 20px;
+  gap: 22px;
 }
 
 .hero-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 230px;
-  gap: 16px;
+  gap: 18px;
   align-items: stretch;
 }
 
 .hero-metric {
-  background: linear-gradient(160deg, #2f67f4 0%, #1f4ecf 100%);
-  color: #fff;
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.84), rgba(207, 230, 255, 0.52)),
+    radial-gradient(circle at 80% 10%, rgba(104, 169, 255, 0.45), transparent 45%);
+  color: #1a3a63;
   display: flex;
   flex-direction: column;
   justify-content: center;
   min-height: 170px;
+  border: 1px solid rgba(255, 255, 255, 0.78);
 }
 
 .metric-label {
   font-size: 13px;
   letter-spacing: 0.3px;
-  opacity: 0.85;
+  opacity: 0.78;
 }
 
 .metric-value {
   font-family: var(--font-display);
   font-size: clamp(34px, 5vw, 56px);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1;
 }
 
 .metric-sub {
   font-size: 13px;
-  opacity: 0.85;
+  opacity: 0.76;
 }
 
 .control-panel {
@@ -448,43 +460,53 @@ const saveCategory = async () => {
 
 .category-pill {
   min-height: 42px;
-  padding: 9px 14px;
-  border: 1px solid var(--border-color);
+  padding: 9px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.52);
   border-radius: 999px;
-  background: #fff;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.76), rgba(236, 247, 255, 0.54));
   color: var(--text-secondary);
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74);
 }
 
 .category-pill:hover {
-  border-color: var(--brand-400);
-  color: var(--brand-600);
+  color: #1d4f96;
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 18px rgba(92, 128, 188, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.84);
 }
 
 .category-pill.is-active {
-  border-color: transparent;
-  color: #fff;
-  background: linear-gradient(120deg, var(--brand-500), var(--brand-400));
-  box-shadow: 0 10px 20px rgba(47, 103, 244, 0.32);
+  border-color: rgba(255, 255, 255, 0.74);
+  color: #113154;
+  background: linear-gradient(136deg, rgba(255, 255, 255, 0.86), rgba(173, 210, 255, 0.72));
+  box-shadow:
+    0 10px 22px rgba(92, 126, 188, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
 }
 
 .search-box {
   width: min(100%, 360px);
   min-height: 44px;
   border-radius: 999px;
-  border: 1px solid var(--border-color);
-  background: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.52);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(239, 250, 255, 0.58));
   padding: 0 14px;
   display: inline-flex;
   align-items: center;
   gap: 10px;
   color: var(--text-tertiary);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76);
 }
 
 .search-box:focus-within {
-  border-color: var(--brand-400);
-  box-shadow: 0 0 0 3px rgba(84, 129, 255, 0.16);
+  border-color: rgba(146, 189, 245, 0.74);
+  box-shadow: 0 0 0 4px rgba(125, 175, 245, 0.24);
 }
 
 .search-box input {
@@ -509,18 +531,21 @@ const saveCategory = async () => {
   position: relative;
   overflow: hidden;
   aspect-ratio: 16 / 10;
-  border-radius: var(--border-radius);
+  border-radius: 20px;
   cursor: pointer;
-  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 12px 28px rgba(48, 79, 127, 0.2);
   transform: translateY(0);
   transition:
-    transform 0.24s ease,
-    box-shadow 0.24s ease;
+    transform 0.28s ease,
+    box-shadow 0.28s ease,
+    border-color 0.28s ease;
 }
 
 .wallpaper-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-hover);
+  transform: translateY(-8px);
+  border-color: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 22px 36px rgba(48, 81, 130, 0.28);
 }
 
 .wallpaper-card img {
@@ -534,9 +559,10 @@ const saveCategory = async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 10px 12px;
-  color: #fff;
-  background: linear-gradient(to top, rgba(10, 21, 40, 0.9), rgba(10, 21, 40, 0.2), transparent);
+  padding: 12px 12px 11px;
+  color: #f4f9ff;
+  background: linear-gradient(to top, rgba(8, 23, 46, 0.86), rgba(8, 23, 46, 0.38), transparent);
+  backdrop-filter: blur(6px);
 }
 
 .wallpaper-name {
@@ -555,52 +581,74 @@ const saveCategory = async () => {
 
 .wallpaper-category {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 5px 10px;
+  top: 12px;
+  right: 12px;
+  padding: 6px 11px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.2px;
-  color: #fff;
+  letter-spacing: 0.22px;
+  color: #eaf5ff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
 }
 
 .wallpaper-category.nature {
-  background: rgba(26, 151, 116, 0.88);
+  background: rgba(50, 162, 135, 0.72);
 }
 
 .wallpaper-category.beauty {
-  background: rgba(216, 92, 68, 0.9);
+  background: rgba(214, 111, 96, 0.72);
 }
 
 .wallpaper-category.anime {
-  background: rgba(58, 101, 222, 0.9);
+  background: rgba(91, 133, 223, 0.72);
 }
 
 .wallpaper-category.default {
-  background: rgba(26, 46, 78, 0.72);
+  background: rgba(40, 66, 104, 0.7);
 }
 
 .dialog-content {
   display: grid;
-  gap: 12px;
-  width: min(92vw, 1200px);
+  gap: 14px;
+  width: min(92vw, 1160px);
 }
 
 .dialog-image {
   max-width: 100%;
   max-height: 74vh;
   object-fit: contain;
-  border-radius: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 14px 24px rgba(41, 67, 108, 0.22);
 }
 
 .dialog-image-info {
   display: grid;
-  gap: 4px;
-  color: var(--text-secondary);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
 
-.dialog-image-info strong {
+.info-row {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(230, 244, 255, 0.46));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+.info-row span {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.info-row strong {
+  font-size: 12px;
+  letter-spacing: 0.2px;
   color: var(--text-primary);
 }
 
@@ -611,15 +659,20 @@ const saveCategory = async () => {
 }
 
 .category-form {
-  padding: 10px 0;
+  padding: 8px 0;
 }
 
 .wallpaper-dialog :deep(.t-dialog) {
-  border-radius: 20px;
+  width: min(94vw, 1240px);
 }
 
-.wallpaper-dialog :deep(.t-dialog__header) {
-  font-family: var(--font-display);
+.category-dialog :deep(.t-dialog) {
+  max-width: min(92vw, 520px);
+}
+
+.wallpaper-dialog :deep(.t-button),
+.category-dialog :deep(.t-button) {
+  min-width: 94px;
 }
 
 @media (max-width: 1024px) {
@@ -629,6 +682,10 @@ const saveCategory = async () => {
 
   .hero-metric {
     min-height: 120px;
+  }
+
+  .dialog-image-info {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -642,7 +699,8 @@ const saveCategory = async () => {
   }
 
   .dialog-footer {
-    justify-content: space-between;
+    justify-content: flex-end;
+    flex-wrap: wrap;
     width: 100%;
   }
 }

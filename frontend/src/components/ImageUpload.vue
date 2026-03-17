@@ -240,32 +240,42 @@ const handleDrop = async (e: DragEvent) => {
 
 .upload-area {
   width: 100%;
-  border: 2px dashed rgba(84, 129, 255, 0.35);
-  border-radius: 16px;
+  border: 2px dashed rgba(130, 171, 224, 0.56);
+  border-radius: 20px;
   padding: 28px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.24s ease;
+  transition:
+    transform 0.24s ease,
+    box-shadow 0.24s ease,
+    border-color 0.24s ease,
+    background-color 0.24s ease;
   position: relative;
   min-height: 210px;
   background:
-    radial-gradient(circle at 10% 20%, rgba(84, 129, 255, 0.08), transparent 28%),
-    radial-gradient(circle at 90% 10%, rgba(34, 191, 160, 0.12), transparent 32%),
-    #fbfdff;
+    linear-gradient(155deg, rgba(255, 255, 255, 0.78), rgba(231, 245, 255, 0.52)),
+    radial-gradient(circle at 10% 20%, rgba(113, 170, 255, 0.14), transparent 30%),
+    radial-gradient(circle at 90% 10%, rgba(77, 213, 193, 0.17), transparent 34%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 10px 24px rgba(56, 86, 131, 0.14);
 }
 
 .upload-area:hover {
-  border-color: var(--brand-400);
-  box-shadow: 0 14px 28px rgba(47, 103, 244, 0.14);
+  border-color: rgba(141, 189, 245, 0.86);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 18px 30px rgba(56, 90, 142, 0.22);
+  transform: translateY(-2px);
 }
 
 .upload-area.is-dragging {
-  border-color: var(--brand-500);
-  background-color: rgba(84, 129, 255, 0.08);
-  transform: scale(1.01);
+  border-color: rgba(108, 162, 232, 0.95);
+  background-color: rgba(196, 223, 255, 0.38);
+  transform: scale(1.01) translateY(-1px);
 }
 
 .loading-container {
@@ -279,7 +289,7 @@ const handleDrop = async (e: DragEvent) => {
   width: 20px;
   height: 20px;
   border-radius: 999px;
-  border: 2px solid rgba(84, 129, 255, 0.25);
+  border: 2px solid rgba(84, 129, 255, 0.28);
   border-top-color: var(--brand-500);
   animation: spin 0.8s linear infinite;
 }
@@ -298,7 +308,7 @@ const handleDrop = async (e: DragEvent) => {
 }
 
 .upload-icon {
-  color: var(--brand-500);
+  color: #4a88ef;
   margin-bottom: 8px;
 }
 
@@ -324,20 +334,22 @@ const handleDrop = async (e: DragEvent) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(36, 95, 239, 0.12);
-  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(198, 224, 255, 0.36), rgba(223, 250, 245, 0.34));
+  border-radius: 18px;
   z-index: 10;
   gap: 16px;
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.72);
 }
 
 .drag-icon {
-  color: var(--brand-500);
+  color: #4285ec;
 }
 
 .drag-text {
   font-size: 18px;
   font-weight: 700;
-  color: var(--brand-600);
+  color: #185093;
 }
 
 @keyframes spin {

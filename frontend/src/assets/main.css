@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700&display=swap');
 
 * {
   margin: 0;
@@ -13,13 +13,40 @@ body,
 }
 
 body {
+  position: relative;
   font-family: var(--font-body);
   line-height: 1.6;
   font-size: 16px;
   color: var(--text-primary);
-  background: var(--bg-page);
+  background: linear-gradient(150deg, #d9e4f7 0%, #dfeef7 44%, #e7f2f8 100%);
   text-rendering: geometricPrecision;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(6px);
+}
+
+body::before {
+  width: min(42vw, 520px);
+  aspect-ratio: 1;
+  top: -8%;
+  left: -6%;
+  background: radial-gradient(circle, rgba(132, 176, 255, 0.38), rgba(132, 176, 255, 0));
+}
+
+body::after {
+  width: min(38vw, 500px);
+  aspect-ratio: 1;
+  right: -8%;
+  bottom: -10%;
+  background: radial-gradient(circle, rgba(97, 220, 208, 0.28), rgba(97, 220, 208, 0));
 }
 
 img {
