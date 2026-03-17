@@ -9,7 +9,7 @@ import {
   MessagePlugin,
 } from 'tdesign-vue-next'
 import { downloadWallpaper } from '@/utils/download'
-import { getImages, updateImageCategory } from '@/api/index'
+import { getImages, trackVisit, updateImageCategory } from '@/api/index'
 import { hasManagePermission } from '@/utils/auth'
 
 interface Wallpaper {
@@ -103,6 +103,9 @@ const handleCategoryChange = (value: string) => {
 }
 
 onMounted(() => {
+  trackVisit(window.location.pathname).catch((error) => {
+    console.error('访问统计上报失败:', error)
+  })
   fetchWallpapers()
 })
 

@@ -1,4 +1,5 @@
 import { clearAuthToken, getAuthToken } from '@/utils/auth'
+import { getOrCreateVisitorId } from '@/utils/visitor'
 
 const apiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') || ''
 
@@ -103,10 +104,34 @@ export const updateImageCategory = async (id: string, category: string) => {
   })
 }
 
+export interface TrackVisitResult {
+  day: string
+  path: string
+  pvToday: number
+  uvToday: number
+  pathPvToday: number
+  totalPv: number
+  isNewVisitorToday: boolean
+}
+
+export const trackVisit = async (path: string): Promise<TrackVisitResult> => {
+  return request<TrackVisitResult>(buildUrl('/api/analytics/track'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      path,
+      visitorId: getOrCreateVisitorId(),
+    }),
+  })
+}
+
 export default {
   login,
   getImages,
   uploadImage,
   removeImage,
   updateImageCategory,
+  trackVisit,
 }

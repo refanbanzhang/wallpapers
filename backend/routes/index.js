@@ -2,6 +2,7 @@
 import express from 'express';
 import imageRoutes from './imageRoutes.js';
 import authRoutes from './authRoutes.js';
+import analyticsRoutes from './analyticsRoutes.js';
 
 const router = express.Router();
 
@@ -26,5 +27,6 @@ router.get('/health', (req, res) => {
 // 图片相关路由
 router.use('/images', imageRoutes);
 router.use('/auth', authRoutes);
+router.use('/analytics', analyticsRoutes);
 
 export default router;
