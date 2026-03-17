@@ -1,53 +1,76 @@
 <template>
-  <div class="page-container">
-    <div class="about-content card">
-      <h1 class="page-title">关于壁纸应用</h1>
-      <p class="about-description">
-        这是一个简单的壁纸管理应用，提供了壁纸浏览和上传功能。
-        在上传页面，您可以上传自己喜欢的图片，系统会自动生成对应的缩略图。
+  <div class="page-container about-view">
+    <section class="intro card">
+      <span class="badge">ABOUT PROJECT</span>
+      <h1 class="page-title">一个轻量但高效的壁纸工作台</h1>
+      <p class="page-description">
+        这个项目围绕“上传、整理、浏览、下载”构建，目标是让壁纸管理从零散文件夹变成可检索、可分类的体验。
       </p>
+    </section>
 
-      <h2 class="section-title">主要功能</h2>
-      <ul class="feature-list">
-        <li>浏览壁纸库</li>
-        <li>上传自己的壁纸</li>
-        <li>自动生成缩略图</li>
-        <li>下载原图或缩略图</li>
-      </ul>
+    <section class="grid">
+      <article class="card block">
+        <h2 class="section-title">核心能力</h2>
+        <ul>
+          <li>多图上传，后端自动生成缩略图</li>
+          <li>按关键词与分类快速筛选</li>
+          <li>查看分辨率与元信息后再下载</li>
+          <li>随时调整分类，持续整理图库</li>
+        </ul>
+      </article>
 
-      <h2 class="section-title">技术栈</h2>
-      <ul class="tech-list">
-        <li>Vue 3</li>
-        <li>TypeScript</li>
-        <li>Vue Router</li>
-        <li>Canvas API (生成缩略图)</li>
-        <li>TDesign UI 组件库</li>
-      </ul>
-    </div>
+      <article class="card block">
+        <h2 class="section-title">技术栈</h2>
+        <ul>
+          <li>Vue 3 + TypeScript</li>
+          <li>Vue Router + Pinia</li>
+          <li>TDesign Vue Next</li>
+          <li>Node.js + Express</li>
+          <li>Canvas 缩略图处理</li>
+        </ul>
+      </article>
+
+      <article class="card block">
+        <h2 class="section-title">设计方向</h2>
+        <ul>
+          <li>统一视觉令牌，减少样式分裂</li>
+          <li>强化信息层级，提升浏览效率</li>
+          <li>保证触控区域与移动端可读性</li>
+          <li>控制动效强度，照顾低动态偏好</li>
+        </ul>
+      </article>
+    </section>
   </div>
 </template>
 
 <style scoped>
-.about-content {
-  margin: 0 auto;
+.about-view {
+  display: grid;
+  gap: 18px;
 }
 
-.about-description {
-  font-size: 16px;
-  line-height: 1.6;
+.intro {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(240, 247, 255, 0.92));
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.block ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
   color: var(--text-secondary);
-  margin-bottom: var(--spacing-xl);
+  line-height: 1.7;
 }
 
-.feature-list,
-.tech-list {
-  padding-left: var(--spacing-lg);
-  margin-bottom: var(--spacing-lg);
-}
-
-.feature-list li,
-.tech-list li {
-  margin-bottom: var(--spacing-sm);
-  color: var(--text-secondary);
+@media (max-width: 1000px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

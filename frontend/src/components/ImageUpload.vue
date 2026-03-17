@@ -178,7 +178,10 @@ const handleDrop = async (e: DragEvent) => {
       <div
         v-if="loading"
         class="loading-container"
-      />
+      >
+        <span class="loading-spinner" />
+        <span class="loading-text">正在处理图片...</span>
+      </div>
       <div
         v-else
         class="upload-placeholder"
@@ -237,75 +240,77 @@ const handleDrop = async (e: DragEvent) => {
 
 .upload-area {
   width: 100%;
-  border: 2px dashed var(--td-component-stroke);
-  border-radius: 8px;
-  padding: 24px;
+  border: 2px dashed rgba(84, 129, 255, 0.35);
+  border-radius: 16px;
+  padding: 28px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.24s ease;
   position: relative;
-  min-height: 160px;
+  min-height: 210px;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(84, 129, 255, 0.08), transparent 28%),
+    radial-gradient(circle at 90% 10%, rgba(34, 191, 160, 0.12), transparent 32%),
+    #fbfdff;
 }
 
 .upload-area:hover {
-  border-color: var(--td-brand-color);
+  border-color: var(--brand-400);
+  box-shadow: 0 14px 28px rgba(47, 103, 244, 0.14);
 }
 
 .upload-area.is-dragging {
-  border-color: var(--td-brand-color);
-  background-color: rgba(var(--td-brand-color-rgb), 0.05);
+  border-color: var(--brand-500);
+  background-color: rgba(84, 129, 255, 0.08);
+  transform: scale(1.01);
 }
 
 .loading-container {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  color: var(--text-secondary);
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 2px solid rgba(84, 129, 255, 0.25);
+  border-top-color: var(--brand-500);
+  animation: spin 0.8s linear infinite;
 }
 
 .loading-text {
-  color: var(--td-text-color-secondary);
   font-size: 14px;
-}
-
-.progress-container {
-  width: 200px;
-  margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.progress-text {
-  color: var(--td-text-color-secondary);
-  font-size: 12px;
-  margin-top: 4px;
+  font-weight: 600;
 }
 
 .upload-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  text-align: center;
 }
 
 .upload-icon {
-  color: var(--td-brand-color);
+  color: var(--brand-500);
   margin-bottom: 8px;
 }
 
 .upload-text {
-  font-size: 16px;
-  color: var(--td-text-color-primary);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .upload-hint {
   font-size: 14px;
-  color: var(--td-text-color-secondary);
+  color: var(--text-secondary);
   margin-top: 4px;
 }
 
@@ -319,19 +324,25 @@ const handleDrop = async (e: DragEvent) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: rgba(var(--td-brand-color-rgb), 0.1);
-  border-radius: 8px;
+  background: rgba(36, 95, 239, 0.12);
+  border-radius: 14px;
   z-index: 10;
   gap: 16px;
 }
 
 .drag-icon {
-  color: var(--td-brand-color);
+  color: var(--brand-500);
 }
 
 .drag-text {
   font-size: 18px;
-  font-weight: 500;
-  color: var(--td-brand-color);
+  font-weight: 700;
+  color: var(--brand-600);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

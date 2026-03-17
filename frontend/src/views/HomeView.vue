@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
-import { Dialog as TDialog, Button as TButton, Loading as TLoading, Tabs as TTabs, TabPanel as TTabPanel, Select as TSelect, Option as TOption, MessagePlugin, Input as TInput } from 'tdesign-vue-next'
-import type { TabValue } from 'tdesign-vue-next'
+import { ref, onMounted, computed } from 'vue'
+import {
+  Dialog as TDialog,
+  Button as TButton,
+  Loading as TLoading,
+  Select as TSelect,
+  Option as TOption,
+  MessagePlugin,
+} from 'tdesign-vue-next'
 import { downloadWallpaper } from '@/utils/download'
 import { getImageResolution } from '@/utils/image'
 import { getImages, updateImageCategory } from '@/api/index'
@@ -20,12 +26,11 @@ interface Wallpaper {
   }
 }
 
-// 分类列表
 const categories = [
   { value: 'all', label: '全部' },
   { value: 'nature', label: '自然' },
   { value: 'beauty', label: '美女' },
-  { value: 'anime', label: '动漫' }
+  { value: 'anime', label: '动漫' },
 ]
 
 const wallpapers = ref<Wallpaper[]>([])
@@ -35,40 +40,40 @@ const loading = ref(false)
 const isLoading = ref(false)
 const activeCategory = ref('all')
 
-// 搜索相关
 const searchKeyword = ref('')
 const searchTimeout = ref<number | null>(null)
 
-// 分类设置相关
 const categoryDialogVisible = ref(false)
 const selectedCategory = ref('')
 const categoryLoading = ref(false)
 
-// 按分类和搜索关键词筛选壁纸
 const filteredWallpapers = computed(() => {
-  // 先按分类筛选
-  let filtered = activeCategory.value === 'all'
-    ? wallpapers.value
-    : wallpapers.value.filter(wallpaper => wallpaper.category === activeCategory.value)
+  let filtered =
+    activeCategory.value === 'all'
+      ? wallpapers.value
+      : wallpapers.value.filter((wallpaper) => wallpaper.category === activeCategory.value)
 
-  // 再按搜索关键词筛选
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase()
-    filtered = filtered.filter(wallpaper =>
-      wallpaper.fileName.toLowerCase().includes(keyword)
-    )
+    filtered = filtered.filter((wallpaper) => wallpaper.fileName.toLowerCase().includes(keyword))
   }
 
   return filtered
 })
 
-// 从API获取壁纸数据
+const getCategoryLabel = (category?: string) => {
+  if (!category) {
+    return '未分类'
+  }
+  return categories.find((item) => item.value === category)?.label || '未分类'
+}
+
 const fetchWallpapers = async (search = '') => {
   try {
     isLoading.value = true
     const data = await getImages(search)
     wallpapers.value = data
-    loadResolutions()
+    await loadResolutions()
   } catch (error) {
     console.error('获取壁纸列表失败:', error)
   } finally {
@@ -76,38 +81,35 @@ const fetchWallpapers = async (search = '') => {
   }
 }
 
-// 处理搜索输入
 const handleSearch = (value: string) => {
   searchKeyword.value = value
 
-  // 防抖处理，避免频繁请求
   if (searchTimeout.value) {
     clearTimeout(searchTimeout.value)
   }
 
   searchTimeout.value = window.setTimeout(() => {
     fetchWallpapers(value)
-  }, 500) // 500ms 延迟
+  }, 450)
 }
 
-// 切换分类
-const handleCategoryChange = (value: TabValue) => {
-  activeCategory.value = value as string
+const handleCategoryChange = (value: string) => {
+  activeCategory.value = value
 }
 
-// 获取所有壁纸的分辨率
 const loadResolutions = async () => {
-  for (const wallpaper of wallpapers.value) {
-    try {
-      const resolution = await getImageResolution(wallpaper.originalUrl)
-      wallpaper.resolution = resolution
-    } catch (error) {
-      console.error(`获取壁纸 ${wallpaper.id} 分辨率失败:`, error)
-    }
-  }
+  await Promise.all(
+    wallpapers.value.map(async (wallpaper) => {
+      try {
+        const resolution = await getImageResolution(wallpaper.originalUrl)
+        wallpaper.resolution = resolution
+      } catch (error) {
+        console.error(`获取壁纸 ${wallpaper.id} 分辨率失败:`, error)
+      }
+    }),
+  )
 }
 
-// 组件挂载后获取壁纸数据
 onMounted(() => {
   fetchWallpapers()
 })
@@ -122,11 +124,12 @@ const onCloseDialog = () => {
 }
 
 const handleDownload = async () => {
-  if (!currentWallpaper.value) return
+  if (!currentWallpaper.value) {
+    return
+  }
 
   try {
     loading.value = true
-
     const imageUrl = `http://localhost:3000${currentWallpaper.value.originalUrl}`
     const imageName = currentWallpaper.value.fileName || `wallpaper-${currentWallpaper.value.id}`
 
@@ -138,37 +141,30 @@ const handleDownload = async () => {
   }
 }
 
-// 打开分类设置对话框
 const openCategoryDialog = () => {
-  if (!currentWallpaper.value) return
+  if (!currentWallpaper.value) {
+    return
+  }
 
-  // 设置当前选中的分类
   selectedCategory.value = currentWallpaper.value.category || ''
   categoryDialogVisible.value = true
 }
 
-// 保存分类设置
 const saveCategory = async () => {
-  if (!currentWallpaper.value) return
+  if (!currentWallpaper.value) {
+    return
+  }
 
   try {
     categoryLoading.value = true
-
-    // 调用API更新分类
     await updateImageCategory(currentWallpaper.value.id, selectedCategory.value)
 
-    // 更新本地数据
-    if (currentWallpaper.value) {
-      currentWallpaper.value.category = selectedCategory.value
-
-      // 更新壁纸列表中的对应项
-      const index = wallpapers.value.findIndex(w => w.id === currentWallpaper.value?.id)
-      if (index !== -1) {
-        wallpapers.value[index].category = selectedCategory.value
-      }
+    currentWallpaper.value.category = selectedCategory.value
+    const index = wallpapers.value.findIndex((wallpaper) => wallpaper.id === currentWallpaper.value?.id)
+    if (index !== -1) {
+      wallpapers.value[index].category = selectedCategory.value
     }
 
-    // 关闭对话框
     categoryDialogVisible.value = false
     MessagePlugin.success('分类设置成功')
   } catch (error) {
@@ -181,230 +177,345 @@ const saveCategory = async () => {
 </script>
 
 <template>
-  <div class="page-container">
-    <h1 class="page-title">壁纸库</h1>
+  <div class="page-container home-view">
+    <section class="hero-panel">
+      <div>
+        <span class="badge">CURATED WALLPAPER LIBRARY</span>
+        <h1 class="page-title">发现下一张桌面主角</h1>
+        <p class="page-description">
+          用分类和关键词快速筛选海量壁纸，预览分辨率后再下载，减少试错成本。
+        </p>
+      </div>
+      <div class="hero-metric card">
+        <p class="metric-label">当前结果</p>
+        <p class="metric-value">{{ filteredWallpapers.length }}</p>
+        <p class="metric-sub">总库 {{ wallpapers.length }} 张</p>
+      </div>
+    </section>
 
-    <div>
-      <div class="header-container">
-        <t-tabs
-          v-model="activeCategory"
-          @change="handleCategoryChange"
+    <section class="control-panel card">
+      <div class="category-pills">
+        <button
+          v-for="item in categories"
+          :key="item.value"
+          type="button"
+          class="category-pill"
+          :class="{ 'is-active': activeCategory === item.value }"
+          @click="handleCategoryChange(item.value)"
         >
-          <t-tab-panel
-            v-for="item in categories"
+          {{ item.label }}
+        </button>
+      </div>
+
+      <label class="search-box">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input
+          :value="searchKeyword"
+          type="text"
+          placeholder="搜索文件名..."
+          @input="handleSearch(($event.target as HTMLInputElement).value)"
+        />
+      </label>
+    </section>
+
+    <section
+      v-if="isLoading"
+      class="loading-block"
+    >
+      <t-loading />
+    </section>
+
+    <section
+      v-else-if="wallpapers.length === 0"
+      class="empty-block"
+    >
+      没有找到壁纸，请先上传一些图片。
+    </section>
+
+    <section
+      v-else-if="filteredWallpapers.length === 0"
+      class="empty-block"
+    >
+      当前筛选条件下没有结果，换个关键词试试。
+    </section>
+
+    <section
+      v-else
+      class="wallpapers-grid"
+    >
+      <article
+        v-for="wallpaper in filteredWallpapers"
+        :key="wallpaper.id"
+        class="wallpaper-card"
+        @click="onOpenModal(wallpaper)"
+      >
+        <img
+          :src="wallpaper.thumbnailUrl"
+          :alt="wallpaper.fileName"
+          loading="lazy"
+        />
+
+        <div class="wallpaper-overlay">
+          <p
+            class="wallpaper-name"
+            :title="wallpaper.fileName"
+          >
+            {{ wallpaper.fileName }}
+          </p>
+          <p
+            v-if="wallpaper.resolution"
+            class="wallpaper-resolution"
+          >
+            {{ wallpaper.resolution.width }} × {{ wallpaper.resolution.height }}
+          </p>
+        </div>
+
+        <span
+          class="wallpaper-category"
+          :class="wallpaper.category || 'default'"
+        >
+          {{ getCategoryLabel(wallpaper.category) }}
+        </span>
+      </article>
+    </section>
+
+    <t-dialog
+      :visible="dialogVisible"
+      :header="currentWallpaper?.fileName"
+      attach="body"
+      class="wallpaper-dialog"
+      width="auto"
+      top="5%"
+      @close="onCloseDialog"
+    >
+      <div
+        v-if="currentWallpaper"
+        class="dialog-content"
+      >
+        <img
+          :src="currentWallpaper.originalUrl"
+          :alt="currentWallpaper.fileName"
+          class="dialog-image"
+        />
+
+        <div class="dialog-image-info">
+          <p><strong>上传时间：</strong>{{ currentWallpaper.uploadTime }}</p>
+          <p><strong>文件大小：</strong>{{ Math.round(currentWallpaper.fileSize / 1024) }} KB</p>
+          <p><strong>图片分类：</strong>{{ getCategoryLabel(currentWallpaper.category) }}</p>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <t-button
+            theme="default"
+            @click="openCategoryDialog"
+          >
+            设置分类
+          </t-button>
+          <t-button
+            theme="default"
+            @click="onCloseDialog"
+          >
+            关闭
+          </t-button>
+          <t-button
+            theme="primary"
+            :loading="loading"
+            @click="handleDownload"
+          >
+            下载原图
+          </t-button>
+        </div>
+      </template>
+    </t-dialog>
+
+    <t-dialog
+      :visible="categoryDialogVisible"
+      header="设置壁纸分类"
+      attach="body"
+      class="category-dialog"
+      width="500px"
+      @close="categoryDialogVisible = false"
+    >
+      <div class="category-form">
+        <t-select
+          v-model="selectedCategory"
+          placeholder="请选择分类"
+          clearable
+        >
+          <t-option
+            v-for="item in categories.filter((category) => category.value !== 'all')"
             :key="item.value"
             :value="item.value"
             :label="item.label"
           />
-        </t-tabs>
+        </t-select>
+      </div>
 
-        <div class="search-container">
-          <t-input
-            v-model="searchKeyword"
-            placeholder="搜索文件名..."
-            clearable
-            @change="handleSearch"
+      <template #footer>
+        <div class="dialog-footer">
+          <t-button
+            theme="default"
+            @click="categoryDialogVisible = false"
           >
-            <template #suffix-icon>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle
-                  cx="11"
-                  cy="11"
-                  r="8"
-                ></circle>
-                <line
-                  x1="21"
-                  y1="21"
-                  x2="16.65"
-                  y2="16.65"
-                ></line>
-              </svg>
-            </template>
-          </t-input>
-        </div>
-      </div>
-
-      <div
-        v-if="isLoading"
-        class="loading-container"
-      >
-        <t-loading />
-      </div>
-
-      <div
-        v-else-if="wallpapers.length === 0"
-        class="empty-state"
-      >
-        没有找到壁纸，请上传一些壁纸
-      </div>
-
-      <div v-else>
-        <div class="wallpapers-grid">
-          <div
-            class="wallpaper-card"
-            v-for="wallpaper in filteredWallpapers"
-            :key="wallpaper.id"
-            @click="onOpenModal(wallpaper)"
+            取消
+          </t-button>
+          <t-button
+            theme="primary"
+            :loading="categoryLoading"
+            @click="saveCategory"
           >
-            <img
-              :src="wallpaper.thumbnailUrl"
-              :alt="wallpaper.fileName"
-            />
-            <div class="wallpaper-info">
-              <span class="wallpaper-name">{{ wallpaper.fileName }}</span>
-              <span
-                class="wallpaper-resolution"
-                v-if="wallpaper.resolution"
-              >
-                {{ wallpaper.resolution.width }} × {{ wallpaper.resolution.height }}
-              </span>
-            </div>
-            <div
-              class="wallpaper-category"
-              :class="wallpaper.category"
-            >
-              {{categories.find(cat => cat.value === wallpaper.category)?.label}}
-            </div>
-          </div>
+            保存
+          </t-button>
         </div>
-      </div>
-
-      <t-dialog
-        :visible="dialogVisible"
-        :header="currentWallpaper?.fileName"
-        attach="body"
-        @close="onCloseDialog"
-        class="wallpaper-dialog"
-        width="auto"
-        top="5%"
-      >
-        <div
-          v-if="currentWallpaper"
-          class="dialog-content"
-        >
-          <img
-            :src="currentWallpaper.originalUrl"
-            :alt="currentWallpaper.fileName"
-            class="dialog-image"
-          />
-          <div class="dialog-image-info">
-            <p>上传时间: {{ currentWallpaper.uploadTime }}</p>
-            <p>文件大小: {{ Math.round(currentWallpaper.fileSize / 1024) }} KB</p>
-            <p v-if="currentWallpaper.category">
-              分类: {{categories.find(cat => cat.value === currentWallpaper?.category)?.label}}
-            </p>
-          </div>
-        </div>
-        <template #footer>
-          <div class="dialog-footer">
-            <t-button
-              theme="default"
-              @click="openCategoryDialog"
-            >设置分类</t-button>
-            <t-button
-              theme="default"
-              @click="onCloseDialog"
-            >关闭</t-button>
-            <t-button
-              theme="primary"
-              :loading="loading"
-              @click="handleDownload"
-            >下载</t-button>
-          </div>
-        </template>
-      </t-dialog>
-
-      <!-- 分类设置对话框 -->
-      <t-dialog
-        :visible="categoryDialogVisible"
-        header="设置壁纸分类"
-        attach="body"
-        @close="categoryDialogVisible = false"
-        class="category-dialog"
-        width="500px"
-      >
-        <div class="category-form">
-          <t-select
-            v-model="selectedCategory"
-            placeholder="请选择分类"
-            clearable
-          >
-            <t-option
-              v-for="item in categories.filter(c => c.value !== 'all')"
-              :key="item.value"
-              :value="item.value"
-              :label="item.label"
-            />
-          </t-select>
-        </div>
-        <template #footer>
-          <div class="dialog-footer">
-            <t-button
-              theme="default"
-              @click="categoryDialogVisible = false"
-            >取消</t-button>
-            <t-button
-              theme="primary"
-              :loading="categoryLoading"
-              @click="saveCategory"
-            >保存</t-button>
-          </div>
-        </template>
-      </t-dialog>
-    </div>
+      </template>
+    </t-dialog>
   </div>
 </template>
 
 <style scoped>
-.page-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+.home-view {
+  display: grid;
+  gap: 20px;
 }
 
-.header-container {
+.hero-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 230px;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.hero-metric {
+  background: linear-gradient(160deg, #2f67f4 0%, #1f4ecf 100%);
+  color: #fff;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 170px;
 }
 
-.search-container {
-  width: 300px;
+.metric-label {
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  opacity: 0.85;
+}
+
+.metric-value {
+  font-family: var(--font-display);
+  font-size: clamp(34px, 5vw, 56px);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.metric-sub {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.control-panel {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.category-pills {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.category-pill {
+  min-height: 42px;
+  padding: 9px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text-secondary);
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.category-pill:hover {
+  border-color: var(--brand-400);
+  color: var(--brand-600);
+}
+
+.category-pill.is-active {
+  border-color: transparent;
+  color: #fff;
+  background: linear-gradient(120deg, var(--brand-500), var(--brand-400));
+  box-shadow: 0 10px 20px rgba(47, 103, 244, 0.32);
+}
+
+.search-box {
+  width: min(100%, 360px);
+  min-height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: #fff;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-tertiary);
+}
+
+.search-box:focus-within {
+  border-color: var(--brand-400);
+  box-shadow: 0 0 0 3px rgba(84, 129, 255, 0.16);
+}
+
+.search-box input {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.search-box input::placeholder {
+  color: #8b9ab0;
 }
 
 .wallpapers-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  grid-gap: var(--spacing-md);
-  margin-top: var(--spacing-lg);
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 16px;
 }
 
 .wallpaper-card {
-  border-radius: var(--border-radius);
-  overflow: hidden;
-  box-shadow: var(--box-shadow);
-  cursor: pointer;
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-  aspect-ratio: 16/9;
   position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transform: translateY(0);
+  transition:
+    transform 0.24s ease,
+    box-shadow 0.24s ease;
 }
 
 .wallpaper-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--box-shadow-hover);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-hover);
 }
 
 .wallpaper-card img {
@@ -413,117 +524,121 @@ const saveCategory = async () => {
   object-fit: cover;
 }
 
-.wallpaper-info {
+.wallpaper-overlay {
   position: absolute;
-  bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.6);
+  bottom: 0;
+  padding: 10px 12px;
   color: #fff;
-  padding: 5px 8px;
+  background: linear-gradient(to top, rgba(10, 21, 40, 0.9), rgba(10, 21, 40, 0.2), transparent);
+}
+
+.wallpaper-name {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wallpaper-resolution {
+  font-family: 'Space Grotesk', monospace;
   font-size: 12px;
-  display: flex;
-  justify-content: space-between;
+  opacity: 0.92;
 }
 
 .wallpaper-category {
   position: absolute;
   top: 10px;
   right: 10px;
-  padding: 4px 8px;
-  border-radius: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
   font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
   color: #fff;
-  font-weight: 500;
 }
 
 .wallpaper-category.nature {
-  background-color: rgba(0, 128, 0, 0.7);
+  background: rgba(26, 151, 116, 0.88);
 }
 
 .wallpaper-category.beauty {
-  background-color: rgba(255, 105, 180, 0.7);
+  background: rgba(216, 92, 68, 0.9);
 }
 
 .wallpaper-category.anime {
-  background-color: rgba(65, 105, 225, 0.7);
+  background: rgba(58, 101, 222, 0.9);
 }
 
-.wallpaper-resolution {
-  font-family: 'Courier New', monospace;
-}
-
-.wallpaper-name {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 60%;
+.wallpaper-category.default {
+  background: rgba(26, 46, 78, 0.72);
 }
 
 .dialog-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 90vw;
-  max-width: 1200px;
+  display: grid;
+  gap: 12px;
+  width: min(92vw, 1200px);
 }
 
 .dialog-image {
   max-width: 100%;
-  max-height: 80vh;
+  max-height: 74vh;
   object-fit: contain;
-  border-radius: var(--border-radius);
+  border-radius: 14px;
 }
 
 .dialog-image-info {
-  margin-top: var(--spacing-sm);
-  font-size: 14px;
+  display: grid;
+  gap: 4px;
   color: var(--text-secondary);
-  width: 100%;
 }
 
-.dialog-image-info p {
-  margin: 5px 0;
+.dialog-image-info strong {
+  color: var(--text-primary);
 }
 
 .dialog-footer {
   display: flex;
+  gap: 10px;
   justify-content: flex-end;
-  gap: var(--spacing-sm);
-}
-
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 300px;
-  margin-top: 20px;
-}
-
-.empty-state {
-  text-align: center;
-  margin-top: 50px;
-  color: var(--text-secondary);
-}
-
-.wallpaper-dialog :deep(.t-dialog__body) {
-  padding: 16px;
-}
-
-.wallpaper-dialog :deep(.t-dialog__header) {
-  padding: 16px 24px;
 }
 
 .category-form {
-  padding: 16px 0;
+  padding: 10px 0;
 }
 
-.category-dialog :deep(.t-dialog__body) {
-  padding: 16px 24px;
+.wallpaper-dialog :deep(.t-dialog) {
+  border-radius: 20px;
 }
 
-.category-dialog :deep(.t-dialog__header) {
-  padding: 16px 24px;
+.wallpaper-dialog :deep(.t-dialog__header) {
+  font-family: var(--font-display);
+}
+
+@media (max-width: 1024px) {
+  .hero-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-metric {
+    min-height: 120px;
+  }
+}
+
+@media (max-width: 700px) {
+  .control-panel {
+    align-items: stretch;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .dialog-footer {
+    justify-content: space-between;
+    width: 100%;
+  }
 }
 </style>
