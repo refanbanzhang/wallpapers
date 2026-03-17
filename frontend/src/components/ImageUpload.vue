@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 import { MessagePlugin } from 'tdesign-vue-next'
 import { MAX_FILE_SIZE } from '@/constants/constants'
 
@@ -16,6 +16,14 @@ const emit = defineEmits(['upload-success'])
 const fileInput = ref<HTMLInputElement | null>(null)
 const loading = ref(false)
 const isDragging = ref(false)
+const suppressNextClick = ref(false)
+let suppressClickTimer: ReturnType<typeof setTimeout> | null = null
+
+onBeforeUnmount(() => {
+  if (suppressClickTimer) {
+    clearTimeout(suppressClickTimer)
+  }
+})
 
 // 设置默认值
 const maxFileSize = props.maxFileSize || MAX_FILE_SIZE
@@ -23,7 +31,14 @@ const maxFileSize = props.maxFileSize || MAX_FILE_SIZE
 /**
  * 打开文件选择器
  */
-const openFileSelector = () => {
+const openFileSelector = (event?: MouseEvent) => {
+  if (suppressNextClick.value) {
+    event?.preventDefault()
+    event?.stopPropagation()
+    suppressNextClick.value = false
+    return
+  }
+
   fileInput.value?.click()
 }
 
@@ -138,6 +153,27 @@ const handleDragOver = (e: DragEvent) => {
 const handleDragLeave = (e: DragEvent) => {
   e.preventDefault()
   e.stopPropagation()
+
+  const currentTarget = e.currentTarget as HTMLElement | null
+  const relatedTarget = e.relatedTarget as Node | null
+
+  if (currentTarget && relatedTarget && currentTarget.contains(relatedTarget)) {
+    return
+  }
+
+  if (currentTarget) {
+    const rect = currentTarget.getBoundingClientRect()
+    const stillInDropzone =
+      e.clientX >= rect.left &&
+      e.clientX <= rect.right &&
+      e.clientY >= rect.top &&
+      e.clientY <= rect.bottom
+
+    if (stillInDropzone) {
+      return
+    }
+  }
+
   isDragging.value = false
 }
 
@@ -145,6 +181,14 @@ const handleDrop = async (e: DragEvent) => {
   e.preventDefault()
   e.stopPropagation()
   isDragging.value = false
+  suppressNextClick.value = true
+
+  if (suppressClickTimer) {
+    clearTimeout(suppressClickTimer)
+  }
+  suppressClickTimer = setTimeout(() => {
+    suppressNextClick.value = false
+  }, 250)
 
   const files = e.dataTransfer?.files
   if (!files || files.length === 0) {
