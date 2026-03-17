@@ -44,6 +44,14 @@ const handleAuthClick = async () => {
             >
               图片管理
             </RouterLink>
+            <RouterLink
+              v-if="hasManagePermission"
+              to="/dashboard"
+              class="nav-link"
+              active-class="active-link"
+            >
+              数据仪表盘
+            </RouterLink>
             <RouterLink to="/about" class="nav-link" active-class="active-link">关于</RouterLink>
           </nav>
 

@@ -127,6 +127,42 @@ export const trackVisit = async (path: string): Promise<TrackVisitResult> => {
   })
 }
 
+export interface AnalyticsOverview {
+  pvToday: number
+  uvToday: number
+  totalPv: number
+  avgPvPerVisitor: number
+  singleVisitVisitorRate: number
+  uniquePathsToday: number
+}
+
+export interface AnalyticsDailyPoint {
+  day: string
+  pv: number
+  uv: number
+}
+
+export interface AnalyticsPathPoint {
+  path: string
+  pv: number
+}
+
+export interface AnalyticsHourPoint {
+  hour: number
+  pv: number
+}
+
+export interface AnalyticsSummary {
+  overview: AnalyticsOverview
+  dailyTrend: AnalyticsDailyPoint[]
+  topPaths: AnalyticsPathPoint[]
+  hourlyPv: AnalyticsHourPoint[]
+}
+
+export const getAnalyticsSummary = async (): Promise<AnalyticsSummary> => {
+  return request<AnalyticsSummary>(buildUrl('/api/analytics/summary'))
+}
+
 export default {
   login,
   getImages,
@@ -134,4 +170,5 @@ export default {
   removeImage,
   updateImageCategory,
   trackVisit,
+  getAnalyticsSummary,
 }

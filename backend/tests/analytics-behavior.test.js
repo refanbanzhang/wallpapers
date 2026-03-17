@@ -4,6 +4,8 @@ import express from 'express';
 import request from 'supertest';
 
 import routes from '../routes/index.js';
+import config from '../config/config.js';
+import { createAuthToken } from '../utils/authToken.js';
 
 const createApp = () => {
   const app = express();
@@ -63,4 +65,48 @@ test('POST /api/analytics/track should fallback to ip+ua identity when visitorId
   assert.equal(secondResponse.status, 200);
   assert.equal(secondResponse.body.success, true);
   assert.equal(secondResponse.body.data.isNewVisitorToday, false);
+});
+
+test('GET /api/analytics/summary should reject unauthenticated request', async () => {
+  const app = createApp();
+
+  const response = await request(app).get('/api/analytics/summary');
+
+  assert.equal(response.status, 401);
+  assert.equal(response.body.success, false);
+});
+
+test('GET /api/analytics/summary should return dashboard metrics for admin', async () => {
+  const app = createApp();
+  const adminToken = createAuthToken(
+    { username: config.auth.username, role: config.auth.role },
+    config.auth.secret,
+    config.auth.tokenExpiresInSeconds,
+  );
+
+  await request(app)
+    .post('/api/analytics/track')
+    .set('User-Agent', 'dashboard-agent/1.0')
+    .set('x-forwarded-for', '203.0.113.80')
+    .send({ visitorId: 'dashboard-visitor-1', path: '/' });
+
+  await request(app)
+    .post('/api/analytics/track')
+    .set('User-Agent', 'dashboard-agent/1.0')
+    .set('x-forwarded-for', '203.0.113.81')
+    .send({ visitorId: 'dashboard-visitor-2', path: '/about' });
+
+  const response = await request(app)
+    .get('/api/analytics/summary')
+    .set('Authorization', `Bearer ${adminToken}`);
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.success, true);
+  assert.equal(typeof response.body.data.overview?.pvToday, 'number');
+  assert.equal(typeof response.body.data.overview?.uvToday, 'number');
+  assert.equal(Array.isArray(response.body.data.dailyTrend), true);
+  assert.equal(response.body.data.dailyTrend.length, 7);
+  assert.equal(Array.isArray(response.body.data.topPaths), true);
+  assert.equal(Array.isArray(response.body.data.hourlyPv), true);
+  assert.equal(response.body.data.hourlyPv.length, 24);
 });

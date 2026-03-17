@@ -34,6 +34,15 @@ const router = createRouter({
         requiresAuth: true,
       },
     },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: () => import('@/views/DashboardView.vue'),
+      meta: {
+        title: '访问仪表盘',
+        requiresAuth: true,
+      },
+    },
   ],
 })
 
