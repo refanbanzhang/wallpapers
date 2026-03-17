@@ -1,126 +1,67 @@
-# Wallpapers - 壁纸管理应用
+# Wallpapers
 
-这是一个基于Vue 3和Express的壁纸管理应用，支持图片上传、缩略图生成和图片管理功能。
+前后端分离的壁纸管理应用（Vue 3 + Express）。支持上传、缩略图生成、分类、搜索与下载。
 
-## 功能特点
+## 仓库结构
 
-- 图片上传和预览
-- 自动生成缩略图
-- 图片管理（查看、下载、删除）
-- 前后端分离架构
-
-## 项目结构
-
-- `src/` - 前端Vue应用源码
-- `server/` - 后端Express API源码
-- `uploads/` - 上传的图片存储目录
-  - `origin/` - 原始图片
-  - `thumbnails/` - 缩略图
+- `frontend/`：Vue 3 + TypeScript + Vite
+- `backend/`：Express API + Multer + Sharp
+- `backend/upload/origin/`：原图
+- `backend/upload/thumbnails/`：缩略图
 
 ## 环境要求
 
-- Node.js >= 16
-- npm >= 7
+- Node.js >= 18
+- npm >= 9
 
-## 安装和运行
+## 安装
 
-### 安装依赖
+在仓库根目录执行：
 
 ```bash
 npm install
 ```
 
-### 开发模式
+## 开发
 
-#### 分别启动前端和后端
-
-**启动前端**
+在仓库根目录执行：
 
 ```bash
-npm run dev
+npm run start
 ```
 
-**启动后端**
+默认端口：
 
-```bash
-npm run server
-```
+- 前端：`http://localhost:5173`
+- 后端：`http://localhost:3000`
 
-#### 同时启动前端和后端（推荐）
+## 构建
 
-```bash
-npm run dev:full
-```
-
-### 生产构建
+在仓库根目录执行：
 
 ```bash
 npm run build
 ```
 
-## 项目配置
+## 质量检查
 
-### 后端服务器
-
-后端服务器运行在`http://localhost:3000`，提供以下API:
-
-- `POST /api/upload` - 上传图片
-- `GET /api/images` - 获取图片列表
-- `DELETE /api/images/:id` - 删除图片
-
-### 前端开发服务器
-
-前端开发服务器运行在`http://localhost:5173`，并自动代理API请求到后端服务器。
-
-## 技术栈
-
-### 前端
-
-- Vue 3
-- TypeScript
-- Vite
-- Pinia
-- Vue Router
-- TDesign Vue Next
-
-### 后端
-
-- Express
-- Multer (文件上传)
-- CORS
-
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
+```bash
 npm run lint
+npm run test
 ```
+
+## 主要 API
+
+- `GET /api/health`：健康检查
+- `GET /api/images`：获取图片列表（支持 `search` 查询参数）
+- `POST /api/images/upload`：上传图片（`multipart/form-data`, 字段名 `file`）
+- `PUT /api/images/:id/category`：更新分类（可传空字符串清空分类）
+- `DELETE /api/images/:id`：删除单张图片
+- `DELETE /api/images/batch-delete`：批量删除
+
+## 环境变量
+
+- `PORT`：后端端口（默认 `3000`）
+- `HOST`：后端 host（默认 `localhost`）
+- `VITE_API_BASE_URL`：前端请求 API 的基础前缀（默认空，走同域/代理）
+- `VITE_BACKEND_PROXY_TARGET`：Vite 开发代理目标（默认 `http://localhost:3000`）

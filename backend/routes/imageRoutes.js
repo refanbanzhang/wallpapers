@@ -11,13 +11,13 @@ router.post('/upload', upload.single('file'), uploadImage);
 // 获取所有图片
 router.get('/', getAllImages);
 
-// 删除单张图片
-router.delete('/:id', deleteImage);
-
 // 批量删除图片
 router.delete('/batch-delete', batchDeleteImages);
 
 // 更新图片分类
 router.put('/:id/category', updateImageCategory);
+
+// 删除单张图片
+router.delete('/:id', deleteImage);
 
 export default router;

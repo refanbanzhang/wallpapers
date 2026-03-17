@@ -15,7 +15,8 @@ const storage = multer.diskStorage({
     file.originalname = Buffer.from(file.originalname, "latin1").toString("utf8");
 
     // 从请求中获取分类信息（如果有）
-    const category = req.body && req.body.category ? req.body.category : '';
+    const rawCategory = req.body && req.body.category ? String(req.body.category).trim() : '';
+    const category = /^[\p{L}\p{N}-]{1,32}$/u.test(rawCategory) ? rawCategory : '';
 
     // 生成新的安全文件名（包含分类信息）
     const filename = generateSafeFilename(file.originalname, category);

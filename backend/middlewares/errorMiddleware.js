@@ -12,7 +12,7 @@ export const notFoundHandler = (req, res, next) => {
 /**
  * 全局错误处理中间件
  */
-export const errorHandler = (err, req, res, next) => {
+export const errorHandler = (err, req, res, _next) => {
   // 确定状态码 (如果已经发送了响应头，保留当前状态码，否则使用500)
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   res.status(statusCode);

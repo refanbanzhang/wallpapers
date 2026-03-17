@@ -23,10 +23,10 @@
         <h2 class="section-title">技术栈</h2>
         <ul>
           <li>Vue 3 + TypeScript</li>
-          <li>Vue Router + Pinia</li>
+          <li>Vue Router</li>
           <li>TDesign Vue Next</li>
           <li>Node.js + Express</li>
-          <li>Canvas 缩略图处理</li>
+          <li>Sharp 缩略图处理</li>
         </ul>
       </article>
 

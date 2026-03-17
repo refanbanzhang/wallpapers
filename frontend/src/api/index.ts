@@ -1,78 +1,67 @@
-const host = ''
+const apiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') || ''
 
-/**
- * 获取图片列表
- * @param {string} search 搜索关键词（可选）
- * @returns {Promise<Object>} 图片列表
- */
-export const getImages = async (search = '') => {
-  let url = `${host}/api/images`
+const buildUrl = (path: string) => `${apiBase}${path}`
 
-  // 如果有搜索关键词，添加到查询参数
-  if (search) {
-    url += `?search=${encodeURIComponent(search)}`
+const request = async <T>(url: string, init?: RequestInit): Promise<T> => {
+  const response = await fetch(url, init)
+  const payload = await response.json().catch(() => ({}))
+
+  if (!response.ok || payload.success === false) {
+    const message = payload.error || payload.message || `请求失败 (${response.status})`
+    throw new Error(message)
   }
 
-  const response = await fetch(url)
-  const data = await response.json()
-  return data.data
+  return payload.data as T
 }
 
-/**
- * 上传图片到服务器
- * @param {File} file 文件对象
- * @param {string} category 分类（可选）
- * @returns {Promise<Object>} 上传结果
- */
-export const uploadImage = async (file: string | Blob, category = '') => {
+export interface ImageItem {
+  id: string
+  fileName: string
+  originalUrl: string
+  thumbnailUrl: string
+  fileSize: number
+  uploadTime: string
+  category?: string | null
+}
+
+export const getImages = async (search = ''): Promise<ImageItem[]> => {
+  const query = search ? `?search=${encodeURIComponent(search)}` : ''
+  return request<ImageItem[]>(buildUrl(`/api/images${query}`))
+}
+
+export const uploadImage = async (file: Blob, category = ''): Promise<ImageItem> => {
   const formData = new FormData()
   formData.append('file', file)
 
-  // 添加分类信息（如果有）
   if (category) {
     formData.append('category', category)
   }
 
-  const response = await fetch(`${host}/api/images/upload`, {
+  return request<ImageItem>(buildUrl('/api/images/upload'), {
     method: 'POST',
     body: formData,
   })
-  const data = await response.json()
-  return data.data
 }
 
 export const removeImage = async (id: string) => {
-  const response = await fetch(`${host}/api/images/${id}`, {
+  return request(buildUrl(`/api/images/${id}`), {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json'
-    }
   })
-  const data = await response.json()
-  return data.data
 }
 
-/**
- * 更新图片分类
- * @param {string} id 图片ID
- * @param {string} category 分类名称
- * @returns {Promise<Object>} 更新结果
- */
 export const updateImageCategory = async (id: string, category: string) => {
-  const response = await fetch(`${host}/api/images/${id}/category`, {
+  return request(buildUrl(`/api/images/${id}/category`), {
     method: 'PUT',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ category })
+    body: JSON.stringify({ category }),
   })
-  const data = await response.json()
-  return data.data
 }
 
 export default {
   getImages,
   uploadImage,
   removeImage,
-  updateImageCategory
+  updateImageCategory,
 }

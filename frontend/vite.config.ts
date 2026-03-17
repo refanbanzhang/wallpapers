@@ -5,6 +5,8 @@ import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
+const backendTarget = process.env.VITE_BACKEND_PROXY_TARGET || 'http://localhost:3000'
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -18,14 +20,15 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
+    port: 5173,
+    strictPort: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: backendTarget,
         changeOrigin: true
       },
       '/upload': {
-        target: 'http://localhost:3000',
+        target: backendTarget,
         changeOrigin: true
       }
     }

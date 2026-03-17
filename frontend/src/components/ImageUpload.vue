@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { MessagePlugin } from 'tdesign-vue-next'
-import { MAX_FILE_SIZE } from '@/constants/sharedConstants'
+import { MAX_FILE_SIZE } from '@/constants/constants'
 
 const props = defineProps<{
   maxFileSize?: number

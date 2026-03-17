@@ -19,7 +19,7 @@ interface Wallpaper {
   thumbnailUrl: string
   uploadTime: string
   fileSize: number
-  category?: string
+  category?: string | null
   resolution?: {
     width: number
     height: number
@@ -61,11 +61,16 @@ const filteredWallpapers = computed(() => {
   return filtered
 })
 
-const getCategoryLabel = (category?: string) => {
+const getCategoryLabel = (category?: string | null) => {
   if (!category) {
     return '未分类'
   }
   return categories.find((item) => item.value === category)?.label || '未分类'
+}
+
+const formatUploadTime = (uploadTime: string) => {
+  const date = new Date(uploadTime)
+  return Number.isNaN(date.getTime()) ? uploadTime : date.toLocaleString()
 }
 
 const fetchWallpapers = async (search = '') => {
@@ -130,7 +135,7 @@ const handleDownload = async () => {
 
   try {
     loading.value = true
-    const imageUrl = `http://localhost:3000${currentWallpaper.value.originalUrl}`
+    const imageUrl = currentWallpaper.value.originalUrl
     const imageName = currentWallpaper.value.fileName || `wallpaper-${currentWallpaper.value.id}`
 
     await downloadWallpaper(imageUrl, imageName)
@@ -312,7 +317,7 @@ const saveCategory = async () => {
         />
 
         <div class="dialog-image-info">
-          <p><strong>上传时间：</strong>{{ currentWallpaper.uploadTime }}</p>
+          <p><strong>上传时间：</strong>{{ formatUploadTime(currentWallpaper.uploadTime) }}</p>
           <p><strong>文件大小：</strong>{{ Math.round(currentWallpaper.fileSize / 1024) }} KB</p>
           <p><strong>图片分类：</strong>{{ getCategoryLabel(currentWallpaper.category) }}</p>
         </div>

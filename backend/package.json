@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "lint": "eslint ."
+    "build": "node -e \"console.log('backend: no build step')\"",
+    "lint": "eslint .",
+    "test": "node --test"
   },
   "keywords": ["wallpaper", "image", "upload"],
   "author": "",
@@ -23,6 +25,7 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.1",
-    "eslint": "^8.54.0"
+    "eslint": "^8.54.0",
+    "supertest": "^7.1.1"
   }
 }

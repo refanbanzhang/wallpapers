@@ -8,7 +8,7 @@ import {
   DEFAULT_THUMBNAIL_WIDTH,
   DEFAULT_THUMBNAIL_HEIGHT,
   DEFAULT_THUMBNAIL_QUALITY,
-} from '@/constants/sharedConstants'
+} from '@/constants/constants'
 import { getImages, uploadImage } from '@/api/index'
 
 interface ServerImage {
@@ -18,7 +18,7 @@ interface ServerImage {
   fileName: string
   fileSize: number
   uploadTime: string
-  category?: string
+  category?: string | null
 }
 
 interface UploadedImage {
@@ -28,7 +28,7 @@ interface UploadedImage {
   fileName: string
   fileSize: string
   uploadTime: string
-  category?: string
+  category?: string | null
 }
 
 const categoryOptions = [
@@ -44,7 +44,7 @@ const selectedCategory = ref('')
 
 const latestImages = computed(() => uploadedImages.value.slice(0, 12))
 
-const getCategoryLabel = (category?: string) => {
+const getCategoryLabel = (category?: string | null) => {
   if (!category) {
     return '未分类'
   }
@@ -54,7 +54,7 @@ const getCategoryLabel = (category?: string) => {
 const fetchUploadedImages = async () => {
   try {
     loading.value = true
-    const images = (await getImages()) as ServerImage[]
+    const images: ServerImage[] = await getImages()
     uploadedImages.value = images.map((image) => ({
       ...image,
       fileSize: formatFileSize(image.fileSize),
