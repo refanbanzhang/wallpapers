@@ -20,7 +20,10 @@ export const login = (req, res) => {
   }
 
   const token = createAuthToken(
-    { username: config.auth.username },
+    {
+      username: config.auth.username,
+      role: config.auth.role,
+    },
     config.auth.secret,
     config.auth.tokenExpiresInSeconds,
   );

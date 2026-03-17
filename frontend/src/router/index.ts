@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { isAuthenticated } from '@/utils/auth'
+import { hasManagePermission, isAuthenticated } from '@/utils/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,12 +45,20 @@ router.beforeEach((to) => {
     return `/login?redirect=${redirect}`
   }
 
-  if (to.path === '/login' && isAuthenticated.value) {
+  if (requiresAuth && !hasManagePermission.value) {
+    return '/'
+  }
+
+  if (to.path === '/login' && hasManagePermission.value) {
     const redirect =
       typeof to.query.redirect === 'string' && to.query.redirect.startsWith('/')
         ? to.query.redirect
         : '/manage'
     return redirect
+  }
+
+  if (to.path === '/login' && isAuthenticated.value) {
+    return '/'
   }
 
   return true

@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { RouterView, RouterLink } from 'vue-router'
 import { useRoute, useRouter } from 'vue-router'
 
-import { clearAuthToken, isAuthenticated } from '@/utils/auth'
+import { clearAuthToken, hasManagePermission, isAuthenticated } from '@/utils/auth'
 
 const router = useRouter()
 const route = useRoute()
@@ -39,7 +39,7 @@ const handleAuthClick = async () => {
       <nav class="nav-links">
         <RouterLink to="/" class="nav-link" active-class="active-link">首页</RouterLink>
         <RouterLink
-          v-if="isAuthenticated"
+          v-if="hasManagePermission"
           to="/manage"
           class="nav-link"
           active-class="active-link"

@@ -9,9 +9,8 @@ import {
   MessagePlugin,
 } from 'tdesign-vue-next'
 import { downloadWallpaper } from '@/utils/download'
-import { getImageResolution } from '@/utils/image'
 import { getImages, updateImageCategory } from '@/api/index'
-import { isAuthenticated } from '@/utils/auth'
+import { hasManagePermission } from '@/utils/auth'
 
 interface Wallpaper {
   id: string
@@ -38,6 +37,7 @@ const wallpapers = ref<Wallpaper[]>([])
 const dialogVisible = ref(false)
 const currentWallpaper = ref<Wallpaper | null>(null)
 const loading = ref(false)
+const resolutionLoading = ref(false)
 const isLoading = ref(false)
 const activeCategory = ref('all')
 
@@ -79,7 +79,6 @@ const fetchWallpapers = async (search = '') => {
     isLoading.value = true
     const data = await getImages(search)
     wallpapers.value = data
-    await loadResolutions()
   } catch (error) {
     console.error('获取壁纸列表失败:', error)
   } finally {
@@ -103,30 +102,20 @@ const handleCategoryChange = (value: string) => {
   activeCategory.value = value
 }
 
-const loadResolutions = async () => {
-  await Promise.all(
-    wallpapers.value.map(async (wallpaper) => {
-      try {
-        const resolution = await getImageResolution(wallpaper.originalUrl)
-        wallpaper.resolution = resolution
-      } catch (error) {
-        console.error(`获取壁纸 ${wallpaper.id} 分辨率失败:`, error)
-      }
-    }),
-  )
-}
-
 onMounted(() => {
   fetchWallpapers()
 })
 
 const onOpenModal = (wallpaper: Wallpaper) => {
   currentWallpaper.value = wallpaper
+  resolutionLoading.value = !wallpaper.resolution
   dialogVisible.value = true
 }
 
 const onCloseDialog = () => {
   dialogVisible.value = false
+  currentWallpaper.value = null
+  resolutionLoading.value = false
 }
 
 const handleDownload = async () => {
@@ -148,7 +137,7 @@ const handleDownload = async () => {
 }
 
 const openCategoryDialog = () => {
-  if (!currentWallpaper.value) {
+  if (!currentWallpaper.value || !hasManagePermission.value) {
     return
   }
 
@@ -157,7 +146,7 @@ const openCategoryDialog = () => {
 }
 
 const saveCategory = async () => {
-  if (!currentWallpaper.value) {
+  if (!currentWallpaper.value || !hasManagePermission.value) {
     return
   }
 
@@ -181,8 +170,21 @@ const saveCategory = async () => {
   }
 }
 
-const goToLogin = () => {
-  window.location.href = `/login?redirect=${encodeURIComponent('/manage')}`
+const handleDialogImageLoad = (event: Event) => {
+  const image = event.target as HTMLImageElement | null
+  if (!currentWallpaper.value || !image) {
+    return
+  }
+
+  currentWallpaper.value.resolution = {
+    width: image.naturalWidth,
+    height: image.naturalHeight,
+  }
+  resolutionLoading.value = false
+}
+
+const handleDialogImageError = () => {
+  resolutionLoading.value = false
 }
 </script>
 
@@ -286,10 +288,9 @@ const goToLogin = () => {
             {{ wallpaper.fileName }}
           </p>
           <p
-            v-if="wallpaper.resolution"
             class="wallpaper-resolution"
           >
-            {{ wallpaper.resolution.width }} × {{ wallpaper.resolution.height }}
+            点击查看原图
           </p>
         </div>
 
@@ -319,6 +320,8 @@ const goToLogin = () => {
           :src="currentWallpaper.originalUrl"
           :alt="currentWallpaper.fileName"
           class="dialog-image"
+          @load="handleDialogImageLoad"
+          @error="handleDialogImageError"
         />
 
         <div class="dialog-image-info">
@@ -334,30 +337,29 @@ const goToLogin = () => {
             <strong>图片分类</strong>
             <span>{{ getCategoryLabel(currentWallpaper.category) }}</span>
           </p>
+          <p class="info-row">
+            <strong>分辨率</strong>
+            <span>
+              {{
+                resolutionLoading
+                  ? '读取中...'
+                  : currentWallpaper.resolution
+                    ? `${currentWallpaper.resolution.width} × ${currentWallpaper.resolution.height}`
+                    : '未知'
+              }}
+            </span>
+          </p>
         </div>
       </div>
 
       <template #footer>
         <div class="dialog-footer">
           <t-button
-            v-if="isAuthenticated"
+            v-if="hasManagePermission"
             theme="default"
             @click="openCategoryDialog"
           >
             设置分类
-          </t-button>
-          <t-button
-            v-else
-            theme="default"
-            @click="goToLogin"
-          >
-            登录后可设置分类
-          </t-button>
-          <t-button
-            theme="default"
-            @click="onCloseDialog"
-          >
-            关闭
           </t-button>
           <t-button
             theme="primary"

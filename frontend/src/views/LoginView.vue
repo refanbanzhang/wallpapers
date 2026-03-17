@@ -17,7 +17,7 @@ const form = reactive({
 
 const submitLogin = async () => {
   if (!form.username.trim() || !form.password) {
-    MessagePlugin.error('请输入用户名和密码')
+    MessagePlugin.error('请输入账号和密码')
     return
   }
 
@@ -47,15 +47,14 @@ const submitLogin = async () => {
       <span class="badge">ADMIN ACCESS</span>
       <h1 class="page-title">登录管理后台</h1>
       <p class="page-description">登录后可上传图片、删除图片并维护分类信息。</p>
-      <p class="login-hint">默认账号：admin / wallpaper123（可通过后端环境变量覆盖）</p>
 
       <div class="form-grid">
         <label class="field">
-          <span>用户名</span>
+          <span>账号</span>
           <input
             v-model="form.username"
             type="text"
-            placeholder="请输入用户名"
+            placeholder="请输入账号"
             autocomplete="username"
             @keyup.enter="submitLogin"
           />
@@ -98,12 +97,6 @@ const submitLogin = async () => {
   width: min(100%, 460px);
   display: grid;
   gap: 16px;
-}
-
-.login-hint {
-  margin-top: -6px;
-  color: var(--text-tertiary);
-  font-size: 12px;
 }
 
 .form-grid {

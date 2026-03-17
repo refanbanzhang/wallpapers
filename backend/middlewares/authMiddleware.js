@@ -23,3 +23,14 @@ export const requireAuth = (req, res, next) => {
   req.auth = payload;
   next();
 };
+
+export const requireAdmin = (req, res, next) => {
+  if (req.auth?.role !== config.auth.role) {
+    return res.status(403).json({
+      success: false,
+      error: '无管理员权限',
+    });
+  }
+
+  next();
+};

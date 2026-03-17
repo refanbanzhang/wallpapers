@@ -40,8 +40,9 @@ const config = {
 
   // 后台登录认证配置
   auth: {
-    username: process.env.ADMIN_USERNAME || 'admin',
-    password: process.env.ADMIN_PASSWORD || 'wallpaper123',
+    username: process.env.ADMIN_USERNAME || '15014095291',
+    password: process.env.ADMIN_PASSWORD || '332881532',
+    role: process.env.ADMIN_ROLE || 'admin',
     secret: process.env.AUTH_SECRET || 'wallpaper-dev-secret',
     tokenExpiresInSeconds: Number(process.env.AUTH_TOKEN_EXPIRES_IN || 60 * 60 * 12)
   }

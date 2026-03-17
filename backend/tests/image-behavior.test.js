@@ -24,7 +24,7 @@ test('DELETE /api/images/batch-delete should route to batch handler', async () =
   app.use('/api/images', imageRoutes);
 
   const token = createAuthToken(
-    { username: config.auth.username },
+    { username: config.auth.username, role: config.auth.role },
     config.auth.secret,
     config.auth.tokenExpiresInSeconds,
   );
