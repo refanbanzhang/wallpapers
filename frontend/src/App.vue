@@ -81,7 +81,7 @@ const handleAuthClick = async () => {
 .site-header {
   max-width: 1320px;
   margin: 0 auto;
-  border-radius: 16px;
+  border-radius: 14px;
   overflow: hidden;
   border: 1px solid #d9d9d9;
   box-shadow: 0 8px 24px rgba(17, 17, 17, 0.08);

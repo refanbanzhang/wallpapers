@@ -73,7 +73,7 @@ onMounted(() => {
 <template>
   <div class="page-container dashboard-view">
     <section class="hero">
-      <div>
+      <div class="page-copy">
         <span class="badge">ADMIN ANALYTICS</span>
         <h1 class="page-title">访问数据仪表盘</h1>
         <p class="page-description">
@@ -376,7 +376,7 @@ onMounted(() => {
 
 .hour-cell {
   min-height: 46px;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid #e2e2e2;
   background: #1f1f1f;
   color: #ffffff;

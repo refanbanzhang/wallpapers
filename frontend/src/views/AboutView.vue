@@ -1,11 +1,13 @@
 <template>
   <div class="page-container about-view">
     <section class="intro card">
-      <span class="badge">ABOUT PROJECT</span>
-      <h1 class="page-title">一个轻量但高效的壁纸工作台</h1>
-      <p class="page-description">
-        这个项目围绕“上传、整理、浏览、下载”构建，目标是让壁纸管理从零散文件夹变成可检索、可分类的体验。
-      </p>
+      <div class="page-copy">
+        <span class="badge">ABOUT PROJECT</span>
+        <h1 class="page-title">一个轻量但高效的壁纸工作台</h1>
+        <p class="page-description">
+          这个项目围绕“上传、整理、浏览、下载”构建，目标是让壁纸管理从零散文件夹变成可检索、可分类的体验。
+        </p>
+      </div>
     </section>
 
   </div>

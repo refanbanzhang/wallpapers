@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { MessagePlugin, Loading } from 'tdesign-vue-next'
+import { ref, onMounted, computed, watch } from 'vue'
+import { MessagePlugin, Loading, Pagination as TPagination } from 'tdesign-vue-next'
 import ImageUpload from '@/components/ImageUpload.vue'
 import { formatFileSize } from '@/utils/upload'
 import {
@@ -42,8 +42,16 @@ const uploadedImages = ref<UploadedImage[]>([])
 const loading = ref(false)
 const deletingId = ref('')
 const selectedCategory = ref('')
+const currentPage = ref(1)
+const pageSize = ref(12)
+const pageSizeOptions = [8, 12, 16, 24]
 
 const latestImages = computed(() => uploadedImages.value)
+const totalPages = computed(() => Math.max(1, Math.ceil(latestImages.value.length / pageSize.value)))
+const pagedImages = computed(() => {
+  const startIndex = (currentPage.value - 1) * pageSize.value
+  return latestImages.value.slice(startIndex, startIndex + pageSize.value)
+})
 
 const getCategoryLabel = (category?: string | null) => {
   if (!category) {
@@ -91,6 +99,15 @@ const refreshImages = async () => {
   await fetchUploadedImages()
 }
 
+const handleCurrentChange = (nextPage: number) => {
+  currentPage.value = nextPage
+}
+
+const handlePageSizeChange = (nextPageSize: number) => {
+  pageSize.value = nextPageSize
+  currentPage.value = 1
+}
+
 const handleDeleteImage = async (image: UploadedImage) => {
   const confirmed = window.confirm(`确认删除图片「${image.fileName}」吗？`)
   if (!confirmed) {
@@ -113,12 +130,18 @@ const handleDeleteImage = async (image: UploadedImage) => {
 onMounted(() => {
   fetchUploadedImages()
 })
+
+watch([latestImages, pageSize], () => {
+  if (currentPage.value > totalPages.value) {
+    currentPage.value = totalPages.value
+  }
+})
 </script>
 
 <template>
   <div class="page-container upload-view">
     <section class="upload-hero">
-      <div>
+      <div class="page-copy">
         <span class="badge">UPLOAD WORKFLOW</span>
         <h1 class="page-title">上传并整理你的壁纸素材</h1>
         <p class="page-description">
@@ -198,7 +221,7 @@ onMounted(() => {
 
       <div class="gallery-grid">
         <article
-          v-for="image in latestImages"
+          v-for="image in pagedImages"
           :key="image.id"
           class="gallery-card"
         >
@@ -221,6 +244,23 @@ onMounted(() => {
             </button>
           </div>
         </article>
+      </div>
+
+      <div
+        v-if="latestImages.length > pageSize"
+        class="gallery-pagination"
+      >
+        <t-pagination
+          :current="currentPage"
+          :page-size="pageSize"
+          :total="latestImages.length"
+          :page-size-options="pageSizeOptions"
+          show-page-size
+          show-jumper
+          size="small"
+          @current-change="handleCurrentChange"
+          @page-size-change="handlePageSizeChange"
+        />
       </div>
     </section>
   </div>
@@ -360,6 +400,12 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 16px;
+}
+
+.gallery-pagination {
+  display: flex;
+  justify-content: center;
+  padding-top: 4px;
 }
 
 .gallery-card {

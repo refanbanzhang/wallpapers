@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import {
   Dialog as TDialog,
   Button as TButton,
   Loading as TLoading,
   Select as TSelect,
   Option as TOption,
+  Pagination as TPagination,
   MessagePlugin,
 } from 'tdesign-vue-next'
 import { downloadWallpaper } from '@/utils/download'
@@ -40,6 +41,9 @@ const loading = ref(false)
 const resolutionLoading = ref(false)
 const isLoading = ref(false)
 const activeCategory = ref('all')
+const currentPage = ref(1)
+const pageSize = ref(16)
+const pageSizeOptions = [12, 16, 24, 36]
 
 const searchKeyword = ref('')
 const searchTimeout = ref<number | null>(null)
@@ -60,6 +64,13 @@ const filteredWallpapers = computed(() => {
   }
 
   return filtered
+})
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredWallpapers.value.length / pageSize.value)))
+
+const pagedWallpapers = computed(() => {
+  const startIndex = (currentPage.value - 1) * pageSize.value
+  return filteredWallpapers.value.slice(startIndex, startIndex + pageSize.value)
 })
 
 const getCategoryLabel = (category?: string | null) => {
@@ -88,6 +99,7 @@ const fetchWallpapers = async (search = '') => {
 
 const handleSearch = (value: string) => {
   searchKeyword.value = value
+  currentPage.value = 1
 
   if (searchTimeout.value) {
     clearTimeout(searchTimeout.value)
@@ -100,6 +112,16 @@ const handleSearch = (value: string) => {
 
 const handleCategoryChange = (value: string) => {
   activeCategory.value = value
+  currentPage.value = 1
+}
+
+const handleCurrentChange = (nextPage: number) => {
+  currentPage.value = nextPage
+}
+
+const handlePageSizeChange = (nextPageSize: number) => {
+  pageSize.value = nextPageSize
+  currentPage.value = 1
 }
 
 onMounted(() => {
@@ -107,6 +129,12 @@ onMounted(() => {
     console.error('访问统计上报失败:', error)
   })
   fetchWallpapers()
+})
+
+watch([filteredWallpapers, pageSize], () => {
+  if (currentPage.value > totalPages.value) {
+    currentPage.value = totalPages.value
+  }
 })
 
 const onOpenModal = (wallpaper: Wallpaper) => {
@@ -194,7 +222,7 @@ const handleDialogImageError = () => {
 <template>
   <div class="page-container home-view">
     <section class="hero-panel">
-      <div>
+      <div class="page-copy">
         <span class="badge">CURATED WALLPAPER LIBRARY</span>
         <h1 class="page-title">发现下一张桌面主角</h1>
         <p class="page-description">
@@ -272,7 +300,7 @@ const handleDialogImageError = () => {
       class="wallpapers-grid"
     >
       <article
-        v-for="wallpaper in filteredWallpapers"
+        v-for="wallpaper in pagedWallpapers"
         :key="wallpaper.id"
         class="wallpaper-card"
         @click="onOpenModal(wallpaper)"
@@ -304,6 +332,23 @@ const handleDialogImageError = () => {
           {{ getCategoryLabel(wallpaper.category) }}
         </span>
       </article>
+    </section>
+
+    <section
+      v-if="filteredWallpapers.length > pageSize"
+      class="pagination-wrap card"
+    >
+      <t-pagination
+        :current="currentPage"
+        :page-size="pageSize"
+        :total="filteredWallpapers.length"
+        :page-size-options="pageSizeOptions"
+        show-page-size
+        show-jumper
+        size="small"
+        @current-change="handleCurrentChange"
+        @page-size-change="handlePageSizeChange"
+      />
     </section>
 
     <t-dialog
@@ -543,6 +588,12 @@ const handleDialogImageError = () => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 16px;
+}
+
+.pagination-wrap {
+  padding: 14px 16px;
+  display: flex;
+  justify-content: center;
 }
 
 .wallpaper-card {

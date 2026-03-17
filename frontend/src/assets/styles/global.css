@@ -17,9 +17,9 @@
   --shadow-soft: 0 6px 18px rgba(17, 17, 17, 0.06);
   --shadow-hover: 0 10px 28px rgba(17, 17, 17, 0.1);
 
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
 
   --modal-overlay: rgba(0, 0, 0, 0.3);
 
@@ -61,6 +61,15 @@
   color: var(--text-secondary);
   font-size: 16px;
   line-height: 1.65;
+}
+
+.page-copy {
+  display: grid;
+  gap: 10px;
+}
+
+.page-copy .page-description {
+  margin-top: 0;
 }
 
 .section-title {

@@ -45,9 +45,11 @@ const submitLogin = async () => {
 <template>
   <div class="page-container login-view">
     <section class="login-card card">
-      <span class="badge">ADMIN ACCESS</span>
-      <h1 class="page-title">登录管理后台</h1>
-      <p class="page-description">登录后可上传图片、删除图片并维护分类信息。</p>
+      <div class="page-copy">
+        <span class="badge">ADMIN ACCESS</span>
+        <h1 class="page-title">登录管理后台</h1>
+        <p class="page-description">登录后可上传图片、删除图片并维护分类信息。</p>
+      </div>
 
       <div class="form-grid">
         <label class="field">
