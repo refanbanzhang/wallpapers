@@ -10,16 +10,40 @@ body,
   min-height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   position: relative;
   font-family: var(--font-body);
   line-height: 1.6;
   font-size: 16px;
   color: var(--text-primary);
-  background: var(--bg-page);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.88), transparent 36%),
+    radial-gradient(circle at top right, rgba(240, 240, 240, 0.88), transparent 30%),
+    linear-gradient(180deg, #f8f8f9 0%, var(--bg-page) 42%, #f2f2f4 100%);
   text-rendering: geometricPrecision;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(17, 17, 17, 0.045), transparent 18%),
+    radial-gradient(circle at 85% 12%, rgba(17, 17, 17, 0.03), transparent 16%),
+    radial-gradient(circle at 50% 85%, rgba(17, 17, 17, 0.025), transparent 24%);
+  z-index: 0;
+}
+
+#app {
+  position: relative;
+  z-index: 1;
 }
 
 img {
@@ -41,6 +65,20 @@ select {
 
 button {
   cursor: pointer;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(34, 34, 34, 0.85);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgba(34, 34, 34, 0.12);
+  color: var(--text-primary);
 }
 
 @media (prefers-reduced-motion: reduce) {

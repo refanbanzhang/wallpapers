@@ -2,10 +2,15 @@
 import { computed, onMounted, ref } from 'vue'
 import { MessagePlugin } from 'tdesign-vue-next'
 
-import { getAnalyticsSummary, type AnalyticsSummary } from '@/api/index'
+import { getAnalyticsSummary, type AnalyticsHourPoint, type AnalyticsSummary } from '@/api/index'
+import { formatDateTime, formatRelativeTime } from '@/utils/experience'
 
 const loading = ref(false)
 const summary = ref<AnalyticsSummary | null>(null)
+const refreshedAt = ref<number | null>(null)
+
+const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || '本地时区'
+const currentHour = new Date().getHours()
 
 const metricCards = computed(() => {
   if (!summary.value) {
@@ -53,10 +58,64 @@ const formatDayLabel = (day: string) => {
   return `${date.getMonth() + 1}/${date.getDate()}`
 }
 
+const formatHourLabel = (hour: number) => `${hour.toString().padStart(2, '0')}:00`
+
+const findHourExtreme = (mode: 'max' | 'min'): AnalyticsHourPoint | null => {
+  const points = summary.value?.hourlyPv || []
+  if (points.length === 0) {
+    return null
+  }
+
+  return points.reduce((best, item) => {
+    if (!best) {
+      return item
+    }
+
+    if (mode === 'max') {
+      return item.pv > best.pv ? item : best
+    }
+
+    return item.pv < best.pv ? item : best
+  }, null as AnalyticsHourPoint | null)
+}
+
+const peakHourLabel = computed(() => {
+  const point = findHourExtreme('max')
+  return point ? `${formatHourLabel(point.hour)} · ${point.pv} PV` : '暂无数据'
+})
+
+const quietHourLabel = computed(() => {
+  const point = findHourExtreme('min')
+  return point ? `${formatHourLabel(point.hour)} · ${point.pv} PV` : '暂无数据'
+})
+
+const topPathShare = computed(() => {
+  if (!summary.value) {
+    return '0%'
+  }
+
+  const total = summary.value.overview.totalPv || 0
+  const topTotal = summary.value.topPaths.reduce((acc, item) => acc + item.pv, 0)
+  if (!total) {
+    return '0%'
+  }
+
+  return `${((topTotal / total) * 100).toFixed(1)}%`
+})
+
+const refreshedLabel = computed(() => {
+  if (!refreshedAt.value) {
+    return '等待刷新'
+  }
+
+  return `${formatRelativeTime(refreshedAt.value)} · ${formatDateTime(refreshedAt.value)}`
+})
+
 const fetchSummary = async () => {
   try {
     loading.value = true
     summary.value = await getAnalyticsSummary()
+    refreshedAt.value = Date.now()
   } catch (error) {
     console.error('获取统计数据失败:', error)
     MessagePlugin.error(error instanceof Error ? error.message : '获取统计数据失败')
@@ -79,31 +138,41 @@ onMounted(() => {
         <p class="page-description">
           追踪无登录场景下的访问趋势，结合 PV、UV、路径热度和小时分布判断内容活跃时段。
         </p>
+        <div class="hero-notes">
+          <span class="hero-chip">刷新于 {{ refreshedLabel }}</span>
+          <span class="hero-chip">时区 {{ timeZone }}</span>
+          <span class="hero-chip">当前时段 {{ formatHourLabel(currentHour) }}</span>
+        </div>
       </div>
-      <button
-        type="button"
-        class="refresh-btn"
-        :disabled="loading"
-        @click="fetchSummary"
-      >
+      <button type="button" class="refresh-btn" :disabled="loading" @click="fetchSummary">
         {{ loading ? '刷新中...' : '刷新数据' }}
       </button>
     </section>
 
-    <section
-      v-if="loading && !summary"
-      class="loading-block"
-    >
-      正在加载仪表盘数据...
-    </section>
+    <section v-if="loading && !summary" class="loading-block">正在加载仪表盘数据...</section>
 
     <template v-else-if="summary">
+      <section class="summary-strip card">
+        <div class="summary-item">
+          <p class="summary-label">阅读提示</p>
+          <p class="summary-value">PV / UV / Top 路径 / 24 小时分布</p>
+        </div>
+        <div class="summary-item">
+          <p class="summary-label">最近高峰</p>
+          <p class="summary-value">{{ peakHourLabel }}</p>
+        </div>
+        <div class="summary-item">
+          <p class="summary-label">最安静时段</p>
+          <p class="summary-value">{{ quietHourLabel }}</p>
+        </div>
+        <div class="summary-item">
+          <p class="summary-label">Top 页面累计占比</p>
+          <p class="summary-value">{{ topPathShare }}</p>
+        </div>
+      </section>
+
       <section class="metrics-grid">
-        <article
-          v-for="item in metricCards"
-          :key="item.label"
-          class="card metric-card"
-        >
+        <article v-for="item in metricCards" :key="item.label" class="card metric-card">
           <p class="metric-label">{{ item.label }}</p>
           <p class="metric-value">{{ item.value }}</p>
           <p class="metric-hint">{{ item.hint }}</p>
@@ -113,12 +182,9 @@ onMounted(() => {
       <section class="chart-grid">
         <article class="card trend-card">
           <h2 class="section-title">近 7 天趋势</h2>
+          <p class="section-note">黑色代表 PV，灰色代表 UV。纵向对比能更快看出波动节奏。</p>
           <div class="trend-bars">
-            <div
-              v-for="point in summary.dailyTrend"
-              :key="point.day"
-              class="trend-item"
-            >
+            <div v-for="point in summary.dailyTrend" :key="point.day" class="trend-item">
               <div class="bar-stack">
                 <div
                   class="bar pv"
@@ -133,37 +199,22 @@ onMounted(() => {
             </div>
           </div>
           <p class="legend">
-            <span class="legend-dot pv" /> PV
-            <span class="legend-dot uv" /> UV
+            <span><span class="legend-dot pv" />PV</span>
+            <span><span class="legend-dot uv" />UV</span>
           </p>
         </article>
 
         <article class="card top-path-card">
           <h2 class="section-title">今日 Top 页面</h2>
-          <p
-            v-if="summary.topPaths.length === 0"
-            class="empty-note"
-          >
-            还没有路径访问数据
-          </p>
-          <ul
-            v-else
-            class="path-list"
-          >
-            <li
-              v-for="item in summary.topPaths"
-              :key="item.path"
-              class="path-item"
-            >
+          <p v-if="summary.topPaths.length === 0" class="empty-note">还没有路径访问数据</p>
+          <ul v-else class="path-list">
+            <li v-for="item in summary.topPaths" :key="item.path" class="path-item">
               <div class="path-head">
                 <span class="path-name">{{ item.path }}</span>
                 <span class="path-value">{{ item.pv }}</span>
               </div>
               <div class="path-track">
-                <div
-                  class="path-fill"
-                  :style="{ width: `${(item.pv / maxPathPv) * 100}%` }"
-                />
+                <div class="path-fill" :style="{ width: `${(item.pv / maxPathPv) * 100}%` }" />
               </div>
             </li>
           </ul>
@@ -171,15 +222,19 @@ onMounted(() => {
       </section>
 
       <section class="card hourly-card">
-        <h2 class="section-title">今日 24 小时访问分布</h2>
+        <div class="hourly-head">
+          <h2 class="section-title">今日 24 小时访问分布</h2>
+          <p class="section-note">当前小时已高亮，便于把握实时流量变化。</p>
+        </div>
         <div class="hourly-grid">
           <div
             v-for="point in summary.hourlyPv"
             :key="point.hour"
             class="hour-cell"
+            :class="{ current: point.hour === currentHour }"
             :style="{ opacity: 0.2 + (point.pv / maxHourlyPv) * 0.8 }"
           >
-            <span class="hour-label">{{ point.hour }}</span>
+            <span class="hour-label">{{ formatHourLabel(point.hour) }}</span>
             <span class="hour-value">{{ point.pv }}</span>
           </div>
         </div>
@@ -202,7 +257,28 @@ onMounted(() => {
   padding: clamp(18px, 2.4vw, 26px);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  background: linear-gradient(145deg, #f6f6f6 0%, #ffffff 100%);
+  background: linear-gradient(145deg, #f7f7f7 0%, #ffffff 100%);
+}
+
+.hero-notes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.hero-chip,
+.summary-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.hero-chip {
+  min-height: 32px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.88);
 }
 
 .refresh-btn {
@@ -227,6 +303,23 @@ onMounted(() => {
 
 .refresh-btn:disabled {
   opacity: 0.72;
+}
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.summary-item {
+  padding: 4px 0;
+}
+
+.summary-value {
+  margin-top: 4px;
+  color: var(--text-primary);
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .metrics-grid {
@@ -263,6 +356,12 @@ onMounted(() => {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   gap: 14px;
+}
+
+.section-note {
+  margin: -6px 0 14px;
+  color: var(--text-secondary);
+  font-size: 13px;
 }
 
 .trend-bars {
@@ -312,6 +411,11 @@ onMounted(() => {
   gap: 14px;
 }
 
+.legend span {
+  display: inline-flex;
+  align-items: center;
+}
+
 .legend-dot {
   display: inline-block;
   width: 10px;
@@ -336,6 +440,11 @@ onMounted(() => {
   gap: 12px;
 }
 
+.path-item {
+  display: grid;
+  gap: 4px;
+}
+
 .path-head {
   display: flex;
   justify-content: space-between;
@@ -347,15 +456,16 @@ onMounted(() => {
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
+  word-break: break-all;
 }
 
 .path-value {
   color: var(--text-secondary);
   font-size: 13px;
+  white-space: nowrap;
 }
 
 .path-track {
-  margin-top: 6px;
   height: 8px;
   border-radius: 999px;
   background: #f0f0f0;
@@ -366,6 +476,14 @@ onMounted(() => {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #1f1f1f, #7c7c7c);
+}
+
+.hourly-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .hourly-grid {
@@ -384,6 +502,16 @@ onMounted(() => {
   align-content: center;
   justify-items: center;
   gap: 2px;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.hour-cell.current {
+  border-color: #111111;
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.12);
+  transform: translateY(-1px);
 }
 
 .hour-label {
@@ -398,6 +526,12 @@ onMounted(() => {
 .empty-note {
   color: var(--text-secondary);
   margin: 0;
+}
+
+@media (max-width: 1080px) {
+  .summary-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 980px) {
@@ -423,6 +557,7 @@ onMounted(() => {
     width: 100%;
   }
 
+  .summary-strip,
   .metrics-grid {
     grid-template-columns: 1fr;
   }
