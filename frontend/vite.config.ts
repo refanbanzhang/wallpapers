@@ -5,7 +5,7 @@ import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
-const backendTarget = process.env.VITE_BACKEND_PROXY_TARGET || 'http://localhost:3000'
+const backendTarget = process.env.VITE_BACKEND_PROXY_TARGET || 'http://localhost:8001'
 
 // https://vite.dev/config/
 export default defineConfig({
