@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap");
+
 * {
   margin: 0;
   padding: 0;
@@ -22,23 +24,48 @@ body {
   font-size: 16px;
   color: var(--text-primary);
   background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.88), transparent 36%),
-    radial-gradient(circle at top right, rgba(240, 240, 240, 0.88), transparent 30%),
-    linear-gradient(180deg, #f8f8f9 0%, var(--bg-page) 42%, #f2f2f4 100%);
+    radial-gradient(
+      circle at 8% 12%,
+      rgba(255, 255, 255, 0.92),
+      transparent 22%
+    ),
+    radial-gradient(
+      circle at 88% 10%,
+      rgba(223, 234, 239, 0.72),
+      transparent 20%
+    ),
+    radial-gradient(
+      circle at 50% 88%,
+      rgba(216, 227, 250, 0.24),
+      transparent 30%
+    ),
+    linear-gradient(180deg, #f8fbfc 0%, #f1f6f8 42%, #eef4f7 100%);
   text-rendering: geometricPrecision;
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
 }
 
 body::before {
-  content: '';
+  content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(circle at 15% 20%, rgba(17, 17, 17, 0.045), transparent 18%),
-    radial-gradient(circle at 85% 12%, rgba(17, 17, 17, 0.03), transparent 16%),
-    radial-gradient(circle at 50% 85%, rgba(17, 17, 17, 0.025), transparent 24%);
+    radial-gradient(
+      circle at 14% 24%,
+      rgba(88, 94, 108, 0.03),
+      transparent 18%
+    ),
+    radial-gradient(
+      circle at 86% 18%,
+      rgba(84, 96, 115, 0.035),
+      transparent 16%
+    ),
+    radial-gradient(
+      circle at 48% 78%,
+      rgba(88, 94, 108, 0.025),
+      transparent 24%
+    );
   z-index: 0;
 }
 
@@ -73,12 +100,12 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid rgba(34, 34, 34, 0.85);
-  outline-offset: 2px;
+  outline: 2px solid rgba(88, 94, 108, 0.6);
+  outline-offset: 3px;
 }
 
 ::selection {
-  background: rgba(34, 34, 34, 0.12);
+  background: rgba(88, 94, 108, 0.14);
   color: var(--text-primary);
 }
 

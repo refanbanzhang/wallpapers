@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { Loading, MessagePlugin, Option as TOption, Pagination as TPagination, Select as TSelect } from 'tdesign-vue-next'
 
-import { getImages, removeImage, type ImageItem } from '@/api/index'
+import { crawlWebsiteImages as startWebsiteCrawl, getImages, removeImage, type CrawlResult, type ImageItem } from '@/api/index'
 import ImageUpload from '@/components/ImageUpload.vue'
 import { MAX_FILE_SIZE, DEFAULT_THUMBNAIL_HEIGHT, DEFAULT_THUMBNAIL_QUALITY, DEFAULT_THUMBNAIL_WIDTH } from '@/constants/constants'
 import { formatDateTime, formatRelativeTime, uploadImageWithProgress } from '@/utils/experience'
@@ -74,6 +74,12 @@ const currentPage = ref(defaultState.currentPage)
 const pageSize = ref(defaultState.pageSize)
 const isUploading = ref(false)
 const uploadQueue = ref<UploadQueueItem[]>([])
+const crawlUrl = ref('')
+const crawlDelayMs = ref(1000)
+const crawlMaxPages = ref(20)
+const crawlMaxImages = ref(200)
+const isCrawling = ref(false)
+const crawlResult = ref<CrawlResult | null>(null)
 const hydrated = ref(false)
 let fetchToken = 0
 
@@ -225,6 +231,14 @@ const uploadSummaryText = computed(() => {
 const uploadProgressHint = computed(() => {
   const categoryLabel = getCategoryLabel(selectedCategory.value)
   return selectedCategory.value ? `默认分类：${categoryLabel}` : '上传前可先选分类，后续浏览更容易筛选'
+})
+
+const crawlSummaryText = computed(() => {
+  if (!crawlResult.value) {
+    return '输入网站地址后，系统会按页顺序抓取，默认每次请求间隔 1 秒。'
+  }
+
+  return `已访问 ${crawlResult.value.pagesVisited} 页，下载 ${crawlResult.value.imagesDownloaded} 张，跳过 ${crawlResult.value.imagesSkipped} 张`
 })
 
 const isFilterActive = computed(
@@ -404,6 +418,35 @@ const clearUploadQueue = () => {
   uploadQueue.value = []
 }
 
+const handleWebsiteCrawl = async () => {
+  if (!crawlUrl.value.trim()) {
+    MessagePlugin.warning('请先输入网站地址')
+    return
+  }
+
+  try {
+    isCrawling.value = true
+    crawlResult.value = null
+
+    const result = await startWebsiteCrawl({
+      startUrl: crawlUrl.value.trim(),
+      category: selectedCategory.value,
+      delayMs: crawlDelayMs.value,
+      maxPages: crawlMaxPages.value,
+      maxImages: crawlMaxImages.value,
+    })
+
+    crawlResult.value = result
+    await fetchUploadedImages()
+    MessagePlugin.success(`抓取完成，已下载 ${result.imagesDownloaded} 张图片`)
+  } catch (error) {
+    console.error('抓取网站图片失败:', error)
+    MessagePlugin.error(error instanceof Error ? error.message : '抓取网站图片失败')
+  } finally {
+    isCrawling.value = false
+  }
+}
+
 const handleDeleteImage = async (image: UploadedImage) => {
   const confirmed = window.confirm(`确认删除图片「${image.fileName}」吗？`)
   if (!confirmed) {
@@ -534,6 +577,52 @@ onMounted(() => {
         :thumbnail-quality="DEFAULT_THUMBNAIL_QUALITY"
         @upload-success="handleUploadSuccess"
       />
+
+      <div class="crawl-panel">
+        <div class="panel-head panel-head--compact">
+          <div class="page-copy">
+            <h3 class="section-title section-title--small">网站抓取</h3>
+            <p class="panel-note">
+              会按页顺序继续抓取“下一页”，并强制串行访问。默认每次请求间隔 1 秒，尽量模拟正常浏览速度。
+            </p>
+          </div>
+          <button type="button" class="tool-btn tool-btn--primary" :disabled="isCrawling" @click="handleWebsiteCrawl">
+            {{ isCrawling ? '抓取中...' : '开始抓取' }}
+          </button>
+        </div>
+
+        <div class="crawl-form">
+          <label class="crawl-field crawl-field--wide">
+            <span>起始网址</span>
+            <input v-model.trim="crawlUrl" type="url" placeholder="https://example.com/gallery?page=1" />
+          </label>
+
+          <label class="crawl-field">
+            <span>请求间隔(ms)</span>
+            <input v-model.number="crawlDelayMs" type="number" min="1000" step="100" />
+          </label>
+
+          <label class="crawl-field">
+            <span>最大页数</span>
+            <input v-model.number="crawlMaxPages" type="number" min="1" max="100" />
+          </label>
+
+          <label class="crawl-field">
+            <span>最多下载</span>
+            <input v-model.number="crawlMaxImages" type="number" min="1" max="2000" />
+          </label>
+        </div>
+
+        <div class="crawl-summary">
+          <p class="crawl-summary-text">{{ crawlSummaryText }}</p>
+          <div v-if="crawlResult?.pageSummaries.length" class="crawl-page-list">
+            <article v-for="item in crawlResult.pageSummaries" :key="item.pageUrl" class="crawl-page-item">
+              <p class="crawl-page-url" :title="item.pageUrl">{{ item.pageUrl }}</p>
+              <p>发现 {{ item.discoveredImages }} 张，下载 {{ item.downloadedImages }} 张</p>
+            </article>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section v-if="galleryLoading && uploadedImages.length === 0" class="loading-block">
@@ -725,6 +814,10 @@ onMounted(() => {
   gap: 12px;
 }
 
+.panel-head--compact {
+  align-items: center;
+}
+
 .panel-note {
   color: var(--text-secondary);
   font-size: 14px;
@@ -867,6 +960,73 @@ onMounted(() => {
   font-size: 12px;
 }
 
+.crawl-panel {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: linear-gradient(180deg, #fcfcfc 0%, #f6f6f6 100%);
+}
+
+.crawl-form {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(3, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.crawl-field {
+  display: grid;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.crawl-field--wide {
+  grid-column: span 1;
+}
+
+.crawl-field input {
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: 3px;
+  border: 1px solid var(--border-strong);
+  background: #ffffff;
+  color: var(--text-primary);
+}
+
+.crawl-summary {
+  display: grid;
+  gap: 10px;
+}
+
+.crawl-summary-text {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.crawl-page-list {
+  display: grid;
+  gap: 10px;
+}
+
+.crawl-page-item {
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.crawl-page-url {
+  color: var(--text-primary);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .category-picker,
 .category-pills {
   display: flex;
@@ -951,6 +1111,17 @@ onMounted(() => {
   transform: translateY(-1px);
   border-color: #bcbcbc;
   background: #f7f7f7;
+}
+
+.tool-btn--primary {
+  border-color: #222222;
+  background: #222222;
+  color: #ffffff;
+}
+
+.tool-btn--primary:hover:not(:disabled) {
+  border-color: #111111;
+  background: #111111;
 }
 
 .gallery-toolbar {
@@ -1098,6 +1269,10 @@ onMounted(() => {
 
 @media (max-width: 900px) {
   .upload-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .crawl-form {
     grid-template-columns: 1fr;
   }
 

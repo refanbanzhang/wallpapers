@@ -53,6 +53,33 @@ export interface ImageItem {
   category?: string | null
 }
 
+export interface CrawlPageSummary {
+  pageUrl: string
+  discoveredImages: number
+  downloadedImages: number
+}
+
+export interface CrawledImageItem {
+  sourceUrl: string
+  originalFilename: string
+  storedFilename: string
+  fileSize: number
+  originalUrl: string
+  thumbnailUrl: string
+}
+
+export interface CrawlResult {
+  startUrl: string
+  category?: string | null
+  delayMs: number
+  pagesVisited: number
+  imagesDownloaded: number
+  imagesSkipped: number
+  pageSummaries: CrawlPageSummary[]
+  downloadedImages: CrawledImageItem[]
+  skippedImages: Array<{ sourceUrl: string; reason: string }>
+}
+
 export interface LoginResult {
   token: string
   tokenType: 'Bearer'
@@ -91,6 +118,22 @@ export const uploadImage = async (file: Blob, category = ''): Promise<ImageItem>
 export const removeImage = async (id: string) => {
   return request(buildUrl(`/api/images/${id}`), {
     method: 'DELETE',
+  })
+}
+
+export const crawlWebsiteImages = async (payload: {
+  startUrl: string
+  category?: string
+  delayMs?: number
+  maxPages?: number
+  maxImages?: number
+}): Promise<CrawlResult> => {
+  return request<CrawlResult>(buildUrl('/api/images/crawl'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
   })
 }
 
@@ -167,6 +210,7 @@ export default {
   login,
   getImages,
   uploadImage,
+  crawlWebsiteImages,
   removeImage,
   updateImageCategory,
   trackVisit,

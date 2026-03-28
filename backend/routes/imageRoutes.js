@@ -2,6 +2,7 @@
 import express from 'express';
 import upload from '../middlewares/uploadMiddleware.js';
 import { uploadImage, getAllImages, deleteImage, batchDeleteImages, updateImageCategory } from '../controllers/imageController.js';
+import { startImageCrawl } from '../controllers/imageCrawlerController.js';
 import { requireAuth, requireAdmin } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
@@ -11,6 +12,9 @@ router.post('/upload', requireAuth, requireAdmin, upload.single('file'), uploadI
 
 // 获取所有图片
 router.get('/', getAllImages);
+
+// 抓取网站图片
+router.post('/crawl', requireAuth, requireAdmin, startImageCrawl);
 
 // 批量删除图片
 router.delete('/batch-delete', requireAuth, requireAdmin, batchDeleteImages);
