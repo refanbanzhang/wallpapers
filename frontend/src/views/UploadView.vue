@@ -772,7 +772,7 @@ onMounted(() => {
 
 .progress-track {
   height: 8px;
-  border-radius: 999px;
+  border-radius: 3px;
   background: #ececec;
   overflow: hidden;
 }
@@ -836,7 +836,7 @@ onMounted(() => {
 .upload-badge {
   min-height: 28px;
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: 3px;
   font-size: 12px;
   font-weight: 700;
   background: #f2f2f2;
@@ -878,7 +878,7 @@ onMounted(() => {
 .category-pill {
   min-height: 42px;
   padding: 8px 14px;
-  border-radius: 999px;
+  border-radius: 3px;
   border: 1px solid var(--border-strong);
   background: #ffffff;
   color: var(--text-secondary);
@@ -936,7 +936,7 @@ onMounted(() => {
 .tool-btn {
   min-height: 34px;
   padding: 0 12px;
-  border-radius: 999px;
+  border-radius: 3px;
   border: 1px solid var(--border-strong);
   color: var(--text-secondary);
   background: #ffffff;
@@ -969,7 +969,7 @@ onMounted(() => {
   align-items: center;
   gap: 10px;
   padding: 0 14px;
-  border-radius: 999px;
+  border-radius: 3px;
   border: 1px solid var(--border-strong);
   background: #ffffff;
   color: var(--text-secondary);
@@ -995,7 +995,7 @@ onMounted(() => {
 .filter-chip {
   min-height: 30px;
   padding: 5px 10px;
-  border-radius: 999px;
+  border-radius: 3px;
   border: 1px solid var(--border-color);
   background: #f7f7f7;
   color: var(--text-secondary);
@@ -1057,7 +1057,7 @@ onMounted(() => {
 
 .delete-btn {
   min-height: 32px;
-  border-radius: 999px;
+  border-radius: 3px;
   border: 1px solid #dc8f8a;
   background: #fff6f5;
   color: #a53c35;

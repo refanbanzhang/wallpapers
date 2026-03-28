@@ -143,7 +143,7 @@ const submitLogin = async () => {
   min-width: 120px;
   min-height: 42px;
   border: 1px solid #222222;
-  border-radius: 999px;
+  border-radius: 3px;
   color: #ffffff;
   font-weight: 700;
   background: #222222;

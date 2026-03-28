@@ -325,7 +325,7 @@ const handleDrop = async (e: DragEvent) => {
 .loading-spinner {
   width: 20px;
   height: 20px;
-  border-radius: 999px;
+  border-radius: 3px;
   border: 2px solid rgba(60, 60, 60, 0.2);
   border-top-color: #222222;
   animation: spin 0.8s linear infinite;

@@ -110,50 +110,8 @@ onBeforeUnmount(() => {
         <div class="header-inner top-inner">
           <div class="brand-block">
             <RouterLink to="/" class="brand-link">Wallpaper Studio</RouterLink>
-            <p class="brand-note">A visual vault for your desktop mood</p>
           </div>
-          <div class="header-meta">
-            <span class="context-chip">{{ currentRouteLabel }}</span>
-            <span class="shortcut-chip">{{ shortcutHint }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="header-main">
-        <div class="header-inner nav-inner">
-          <nav class="nav-links">
-            <RouterLink to="/" class="nav-link" active-class="active-link">首页</RouterLink>
-            <RouterLink
-              v-if="hasManagePermission"
-              to="/manage"
-              class="nav-link"
-              active-class="active-link"
-            >
-              图片管理
-            </RouterLink>
-            <RouterLink
-              v-if="hasManagePermission"
-              to="/dashboard"
-              class="nav-link"
-              active-class="active-link"
-            >
-              数据仪表盘
-            </RouterLink>
-            <RouterLink to="/about" class="nav-link" active-class="active-link">关于</RouterLink>
-
-            <button
-              v-if="canResume"
-              type="button"
-              class="nav-link nav-link-button"
-              @click="resumeLastRoute"
-            >
-              继续上次浏览 · {{ lastRouteLabel }}
-            </button>
-          </nav>
-
-          <button type="button" class="auth-btn" @click="handleAuthClick">
-            {{ authLabel }}
-          </button>
+          <div id="site-header-extra" class="header-extra"></div>
         </div>
       </div>
     </header>
@@ -166,25 +124,16 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .app-shell {
-  min-height: 100vh;
+  height: 100%;
+  overflow-y: auto;
   padding: clamp(10px, 1.8vw, 22px);
 }
 
 .site-header {
-  max-width: 1320px;
-  margin: 0 auto;
-  border-radius: 16px;
+  width: 100%;
+  margin: 0;
+  border-radius: 3px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  box-shadow: 0 16px 42px rgba(17, 17, 17, 0.1);
-  backdrop-filter: blur(18px);
-}
-
-.header-top {
-  background:
-    linear-gradient(135deg, rgba(19, 19, 19, 0.96) 0%, rgba(40, 40, 40, 0.94) 100%);
-  color: #f3f3f3;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .header-main {
@@ -192,8 +141,8 @@ onBeforeUnmount(() => {
 }
 
 .header-inner {
-  width: min(100%, 1320px);
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
   padding: 0 18px;
 }
 
@@ -211,14 +160,21 @@ onBeforeUnmount(() => {
 }
 
 .brand-link {
-  color: #ffffff;
+  color: #111111;
   font-weight: 700;
   letter-spacing: 0.2px;
 }
 
+.header-extra {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .brand-note {
   font-size: 12px;
-  color: #bebebe;
+  color: #7a7a7a;
 }
 
 .header-meta {
@@ -235,16 +191,16 @@ onBeforeUnmount(() => {
   align-items: center;
   min-height: 30px;
   padding: 5px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.08);
-  color: #f5f5f5;
+  border-radius: 3px;
+  border: 1px solid rgba(214, 214, 214, 0.85);
+  background: rgba(255, 255, 255, 0.8);
+  color: #4b4b4b;
   font-size: 12px;
 }
 
 .shortcut-chip {
-  color: #d5d5d5;
-  background: rgba(255, 255, 255, 0.05);
+  color: #666666;
+  background: rgba(247, 247, 247, 0.88);
 }
 
 .nav-inner {
@@ -263,12 +219,12 @@ onBeforeUnmount(() => {
 }
 
 .nav-link {
-  min-height: 40px;
-  padding: 8px 15px;
-  border-radius: 999px;
+  min-height: 34px;
+  padding: 6px 12px;
+  border-radius: 3px;
   border: 1px solid transparent;
   color: #444444;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   transition:
     color 0.18s ease,
@@ -294,13 +250,14 @@ onBeforeUnmount(() => {
 }
 
 .auth-btn {
-  min-height: 40px;
-  min-width: 96px;
-  padding: 8px 16px;
-  border-radius: 999px;
+  min-height: 34px;
+  min-width: 84px;
+  padding: 6px 12px;
+  border-radius: 3px;
   border: 1px solid #2e2e2e;
   background: #232323;
   color: #ffffff;
+  font-size: 13px;
   font-weight: 600;
   transition:
     transform 0.18s ease,
@@ -315,8 +272,8 @@ onBeforeUnmount(() => {
 }
 
 .main-content {
-  max-width: 1320px;
-  margin: 16px auto 0;
+  width: 100%;
+  margin: 16px 0 0;
 }
 
 @media (max-width: 860px) {
@@ -330,6 +287,11 @@ onBeforeUnmount(() => {
     padding-bottom: 10px;
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .header-extra {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .header-meta {

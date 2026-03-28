@@ -276,7 +276,7 @@ onMounted(() => {
 .hero-chip {
   min-height: 32px;
   padding: 6px 10px;
-  border-radius: 999px;
+  border-radius: 3px;
   border: 1px solid var(--border-color);
   background: rgba(255, 255, 255, 0.88);
 }
@@ -286,7 +286,7 @@ onMounted(() => {
   min-width: 118px;
   padding: 8px 14px;
   border: 1px solid #232323;
-  border-radius: 999px;
+  border-radius: 3px;
   background: #232323;
   color: #ffffff;
   font-weight: 600;
@@ -385,7 +385,7 @@ onMounted(() => {
 
 .bar {
   width: 11px;
-  border-radius: 999px 999px 3px 3px;
+  border-radius: 3px;
 }
 
 .bar.pv {
@@ -420,7 +420,7 @@ onMounted(() => {
   display: inline-block;
   width: 10px;
   height: 10px;
-  border-radius: 999px;
+  border-radius: 3px;
   margin-right: 5px;
 }
 
@@ -467,7 +467,7 @@ onMounted(() => {
 
 .path-track {
   height: 8px;
-  border-radius: 999px;
+  border-radius: 3px;
   background: #f0f0f0;
   overflow: hidden;
 }
@@ -494,7 +494,7 @@ onMounted(() => {
 
 .hour-cell {
   min-height: 46px;
-  border-radius: 8px;
+  border-radius: 3px;
   border: 1px solid #e2e2e2;
   background: #1f1f1f;
   color: #ffffff;
