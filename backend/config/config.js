@@ -11,7 +11,7 @@ const ROOT_DIR = path.join(__dirname, '..');
 const config = {
   // 服务器配置
   server: {
-    port: process.env.PORT || 3000,
+    port: process.env.PORT || 8001,
     host: process.env.HOST || 'localhost'
   },
 
