@@ -6,7 +6,8 @@
     "backend"
   ],
   "scripts": {
-    "start": "concurrently \"npm --workspace backend run dev\" \"npm --workspace frontend run dev\"",
+    "start": "concurrently --kill-others --success first \"npm --workspace backend run dev\" \"npm --workspace frontend run dev\"",
+    "stop": "pkill -f \"nodemon.js index.js\" || true && pkill -f \"vite\" || true",
     "build": "npm --workspace backend run build && npm --workspace frontend run build",
     "build:backend": "npm --workspace backend run build",
     "build:frontend": "npm --workspace frontend run build",
