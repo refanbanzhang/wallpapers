@@ -1,18 +1,15 @@
-// 主入口文件
+// 主入口文件 — 必须先加载 .env，再 import 读取 process.env 的 config（ESM 会先于本文件其余代码执行 import）
+import 'dotenv/config';
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
 
-// 导入自定义模块
 import config from './config/config.js';
 import routes from './routes/index.js';
 import { notFoundHandler, errorHandler, multerErrorHandler } from './middlewares/errorMiddleware.js';
 import { ensureDirectoriesExist } from './utils/fileUtils.js';
-
-// 加载环境变量
-dotenv.config();
 
 // 创建Express应用
 const app = express();
@@ -57,8 +54,9 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 // 启动服务器
-app.listen(port, () => {
-  console.log(`服务器运行在 http://localhost:${port}`);
+const host = config.server.host;
+app.listen(port, host, () => {
+  console.log(`服务器运行在 http://${host}:${port}`);
   console.log(`上传目录: ${config.upload.uploadsDir}`);
   console.log(`文件大小限制: ${config.upload.maxFileSize}MB`);
 });
